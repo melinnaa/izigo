@@ -1,5 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, {useEffect} from 'react';
+//import { Font } from "expo-font";
 import { StyleSheet, Text, View } from 'react-native';
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
@@ -8,11 +9,22 @@ import HomePage from "./src/containers/HomePage";
 import FavoritePage from './src/containers/FavoritePage';
 import ActualityPage from "./src/containers/ActualityPage";
 import AccountPage from './src/containers/AccountPage';
-import TrafficPage from './src/containers/TrafficPage';
+import TrafficPage from './src/containers/TrafficPage'; 
 
 const Tabs = createBottomTabNavigator();
 
 const App = () =>{
+
+  /*const loadFonts = async () =>{
+    await Font.loadAsync({
+      NunitoLight: require("./src/assets/fonts/Nunito/Nunito-Light.ttf")
+    });
+  }
+
+  useEffect(() => {
+    loadFonts();
+  }, []);*/
+
   return (
     <NavigationContainer>
       <Tabs.Navigator
