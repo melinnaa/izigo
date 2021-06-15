@@ -5,10 +5,10 @@ import MapView from 'react-native-maps';
 
 const formatResponse = (item) =>{
     return{
-        //lines:item.lines,
-        name: item.name,
+        lines:item.lines,
+        /*name: item.name,
         commercial_mode:item.commercial_mode,
-        id:item.id.toString()
+        id:item.id.toString()*/
     }
 }
 
@@ -18,7 +18,7 @@ const searchLine = async (query) =>{
     const json = await response.json();
     console.log(json);
 
-    return json.results.map(formatResponse);
+    return json.map(formatResponse);
 }
 const TrafficPage = () => {
     const [line, setLine] = useState("");
@@ -81,10 +81,9 @@ const TrafficPage = () => {
                         longitude:2.3488,
                         latitudeDelta: 0.09,
                         longitudeDelta:0.04
-                      }}
+                    }}
                 />
             </View>
-        
             <StatusBar style="auto" />
         </View>
     )
@@ -134,11 +133,9 @@ const styles = StyleSheet.create({
         //fontFamily:"Nunito-Bold"
     },
     icon:{
-        //padding:2,
         position:'absolute',
         display:"flex",
-        justifyContent:"flex-end",
-        display:"none"
+        right:5
     },
     map: {
         width: Dimensions.get('window').width,
