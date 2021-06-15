@@ -14,7 +14,7 @@ const Tabs = createBottomTabNavigator();
 
 const App = () =>{
   return (
-    <NavigationContainer>
+    <NavigationContainer style={styles.container}>
       <Tabs.Navigator
         screenOptions={({ route }) => ({
           tabBarIcon: ({ focused, color, size }) => {
@@ -59,15 +59,11 @@ const App = () =>{
             height: 70,
             left: 30, 
             right: 30,
-            bottom: 10,
+            bottom: 40,
             ... styles.shadow
             
           },
           tabStyle:{
-            //position: 'absolute',
-            //width: 258,
-            //height: 54,
-            //left: "calc(50% - 258/2 - 0.5)",
             borderRadius: 160, 
           } 
         }}
@@ -97,19 +93,8 @@ export default App;
 const styles = StyleSheet.create({
   container: {
       flex: 1,
-      backgroundColor: '#fff',
+      backgroundColor: 'white',
       alignItems: 'center',
       justifyContent: 'center',
   },
-
-  shadow: {
-      shadowColor: 'grey',
-      shadowOffset: {
-        width: 0,
-        height: 10
-      },
-      shadowOpacity: 0.25,
-      shadowRadius: 3.25,
-      elevation: 5
-  }
 });
