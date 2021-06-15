@@ -36,6 +36,18 @@ const TrafficPage = () => {
                     </View>
                 </View>
             </View>
+            <View>
+                <MapView 
+                    style={styles.map}
+                    provider={MapView.PROVIDER_GOOGLE}
+                    initialRegion={{
+                        latitude: 48.8534,
+                        longitude:2.3488,
+                        latitudeDelta: 0.09,
+                        longitudeDelta:0.04
+                    }}
+                />
+            </View>
             <StatusBar style="auto" />
         </View>
     )
@@ -81,8 +93,14 @@ const styles = StyleSheet.create({
         fontFamily:"Nunito"
     },
     icon:{
-        padding:1,
-    }
+        position:'absolute',
+        display:"flex",
+        right:5
+    },
+    map: {
+        width: Dimensions.get('window').width,
+        height: Dimensions.get('window').height,
+    },
 })
 
 export default TrafficPage;
