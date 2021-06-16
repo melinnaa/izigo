@@ -2,14 +2,18 @@ import React, { useEffect, useState } from "react"
 import { StyleSheet, View, Text, TouchableHighlight, Button } from 'react-native';
 import axios from "axios";
 
-const InfoTwitter = ({navigation}) => {
+const InfoTwitter = ({ navigation }) => {
     const getData = async () => {
         try {
             const resp = await axios.get("https://api.twitter.com/1.1/search/tweets.json?q=RATP", {
                 headers: {
-                    'Authorization':`epG1qsM44KiHkrRd6WsPoaY5sh2wQD0bVjIhjw984sdlAHtJjB`,
+                    Authorization: `Bearer ${'AAAAAAAAAAAAAAAAAAAAABABQgEAAAAA9SXFVGSLYdYaBrn9jGFD6queSrY%3DV5KKLwEUJKio24ggY4JjnuRMTa33z5uWDhqKPQBTyCaazHjEkL'}`,
+                    "Access-Control-Allow-Origin": "http://localhost:19006/",
+                    "Access-Control-Allow-Credentials": true,
+                    "Content-Type": "application/json"
                 }
             })
+            console.log(resp)
             return resp
         } catch (err) {
             console.log(err);
@@ -105,25 +109,26 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         color: '#FFFFFF',
     },
-    screenButton:{
+    screenButton: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
     },
-    submit:{
-        marginRight:50,
-        marginLeft:40,
-        marginTop:10,
+    submit: {
+        marginRight: 50,
+        marginLeft: 40,
+        marginTop: 10,
         padding: 20,
-        backgroundColor:'#FE596F',
-        borderRadius:40,
+        backgroundColor: '#FE596F',
+        borderRadius: 40,
         borderWidth: 1,
         borderColor: '#fff'
-      },
-      submitText:{
-          color:'#fff',
-          textAlign:'center',
-      }
+    },
+    submitText: {
+        color: '#fff',
+        textAlign: 'center',
+        fontSize: 20
+    }
 })
 
 export default InfoTwitter;
