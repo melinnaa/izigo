@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react"
-import { StyleSheet, View, Text, TouchableHighlight } from 'react-native';
+import { StyleSheet, View, Text, TouchableHighlight, Button } from 'react-native';
 import axios from "axios";
 
-const InfoTwitter = () => {
+const InfoTwitter = ({navigation}) => {
     const token = "Bearer AAAAAAAAAAAAAAAAAAAAABABQgEAAAAA9SXFVGSLYdYaBrn9jGFD6queSrY%3DV5KKLwEUJKio24ggY4JjnuRMTa33z5uWDhqKPQBTyCaazHjEkL"; // Replace BEARER_TOKEN with your token
     const method = "GET";
     const options = {
@@ -36,14 +36,20 @@ const InfoTwitter = () => {
         <View style={styles.container}>
             <Text style={styles.title}>Info Traffic</Text>
             <View style={styles.rectangle}></View>
-            <Text style={styles.text}>Trafic normal{'\n'}</Text>
-            <Text style={styles.text}>Tout roule sur la ligne ..</Text>
-            <TouchableHighlight
-                style={styles.submit}
-                underlayColor='#fff'>
-                <Text style={styles.submitText}>Vois plus de tweets</Text>
-            </TouchableHighlight>
+            <Text style={styles.text}>Trafic normal</Text>
+            <Text style={styles.text2}>Tout roule sur la ligne ..</Text>
 
+            <View style={styles.screenButton}>
+                <TouchableHighlight
+                    style={styles.submit}>
+                    <Text style={styles.submitText}>Vois plus de tweets</Text>
+                </TouchableHighlight>
+                <TouchableHighlight
+                    style={styles.submit}
+                    onPress={() => navigation.navigate('Report')}>
+                    <Text style={styles.submitText}>Tweeter</Text>
+                </TouchableHighlight>
+            </View>
         </View>
 
     )
@@ -97,22 +103,39 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         color: '#FFFFFF',
     },
+    text2: {
+        position: 'absolute',
+        left: '19.73%',
+        right: '5.6%',
+        top: '22%',
+        bottom: '79.56%',
+        fontStyle: 'normal',
+        fontWeight: 'bold',
+        fontSize: 18,
+        lineHeight: 25,
+        display: 'flex',
+        alignItems: 'center',
+        color: '#FFFFFF',
+    },
+    screenButton:{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     submit:{
-        marginRight:40,
+        marginRight:50,
         marginLeft:40,
         marginTop:10,
-    },
-    submitText:{
-        top: 600,
-        paddingTop:20,
-        paddingBottom:20,
-        color:'#fff',
-        textAlign:'center',
+        padding: 20,
         backgroundColor:'#FE596F',
-        borderRadius: 30,
+        borderRadius:40,
         borderWidth: 1,
         borderColor: '#fff'
-    },
+      },
+      submitText:{
+          color:'#fff',
+          textAlign:'center',
+      }
 })
 
 export default InfoTwitter;
