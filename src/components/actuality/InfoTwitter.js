@@ -3,28 +3,16 @@ import { StyleSheet, View, Text, TouchableHighlight, Button } from 'react-native
 import axios from "axios";
 
 const InfoTwitter = ({navigation}) => {
-    const token = "Bearer AAAAAAAAAAAAAAAAAAAAABABQgEAAAAA9SXFVGSLYdYaBrn9jGFD6queSrY%3DV5KKLwEUJKio24ggY4JjnuRMTa33z5uWDhqKPQBTyCaazHjEkL"; // Replace BEARER_TOKEN with your token
-    const method = "GET";
-    const options = {
-        method: method,
-        mode: "cors",
-        headers: {
-            "Content-type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Credentials": true,
-            Authorization: token,
-        },
-    };
-    const query = "RATP";
     const getData = async () => {
         try {
-            const response = await axios.get(
-                `https://api.twitter.com/1.1/search/tweets.json?q=${query}`,
-                options
-            );
-            console.log(response.data);
-        } catch (error) {
-            console.log(error);
+            const resp = await axios.get("https://api.twitter.com/1.1/search/tweets.json?q=RATP", {
+                headers: {
+                    'Authorization':`epG1qsM44KiHkrRd6WsPoaY5sh2wQD0bVjIhjw984sdlAHtJjB`,
+                }
+            })
+            return resp
+        } catch (err) {
+            console.log(err);
         }
     };
 
