@@ -6,7 +6,7 @@ import { FlatList } from 'react-native-gesture-handler';
 
 const formatResponse = (item) =>{
     return{
-        lines:item.response["lines"],
+        lines:item.lines,
         //id:item.lines[0].id
         /*name: item.name,
         commercial_mode:item.commercial_mode,
@@ -29,7 +29,7 @@ const searchLine = async (query) =>{ //metro
 
     const resp = await fetch(url);
     const json = resp.json();
-
+    //console.log(json);
     return formatResponse(json);
 }
 
@@ -42,7 +42,7 @@ const TrafficPage = () => {
     const handleSubmit = () => {
         searchLine(line).then((result) => {
           setListResults(result);
-          console.log(formatResponse(result).lines);
+          console.log(result);
         });
 
     };
@@ -100,10 +100,10 @@ const TrafficPage = () => {
             </View>
             <FlatList  
                 data={listResults}
-                keyExtractor={(item) => item.id}
-                renderItem={(item)=> (
+                //keyExtractor={(item) => item.id}
+                renderItem={({item})=> (
                     <View>
-                        <Text>{item.s}</Text>
+                        <Text>{item.lines}</Text>
                     </View>
                 )}
             />
@@ -126,9 +126,8 @@ const styles = StyleSheet.create({
     },
     title:{
         color:"#ffffff",
-        fontSize:18,
-        fontFamily:"Nunito",
-        fontWeight:"light",
+        fontSize:16,
+        fontFamily:"NunitoRegular",
         textAlign:"center",
         padding:5
     },
@@ -152,7 +151,7 @@ const styles = StyleSheet.create({
         display:"flex",
         alignItems:"center",
         position: "absolute",
-        //fontFamily:"Nunito-Bold"
+        fontFamily:"NunitoRegular",
     },
     icon:{
         position:'absolute',

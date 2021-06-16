@@ -1,5 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, {useEffect} from 'react';
+import Font, { useFonts } from "expo-font";
 import { StyleSheet, Text, View } from 'react-native';
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
@@ -13,6 +14,28 @@ import TrafficPage from './src/containers/TrafficPage';
 const Tabs = createBottomTabNavigator();
 
 const App = () =>{
+
+  const [loaded] = useFonts({
+    NunitoBlack: require("./src/assets/fonts/Nunito/Nunito-Black.ttf"),
+    NunitoBlackItalic: require("./src/assets/fonts/Nunito/Nunito-BlackItalic.ttf"),
+    NunitoBold: require("./src/assets/fonts/Nunito/Nunito-Bold.ttf"),
+    NunitoBoldItalic: require("./src/assets/fonts/Nunito/Nunito-BoldItalic.ttf"),
+    NunitoExtraBold: require("./src/assets/fonts/Nunito/Nunito-ExtraBold.ttf"),
+    NunitoExtraBoldItalic: require("./src/assets/fonts/Nunito/Nunito-ExtraBoldItalic.ttf"),
+    NunitoExtraLight: require("./src/assets/fonts/Nunito/Nunito-ExtraLight.ttf"),
+    NunitoExtraLightItalic: require("./src/assets/fonts/Nunito/Nunito-ExtraLightItalic.ttf"),
+    NunitoItalic: require("./src/assets/fonts/Nunito/Nunito-Italic.ttf"),
+    NunitoLight: require("./src/assets/fonts/Nunito/Nunito-Light.ttf"),
+    NunitoLightItalic: require("./src/assets/fonts/Nunito/Nunito-LightItalic.ttf"),
+    NunitoRegular: require("./src/assets/fonts/Nunito/Nunito-Regular.ttf"),
+    NunitoSemiBold: require("./src/assets/fonts/Nunito/Nunito-SemiBold.ttf"),
+    NunitoSemiBoldItalic: require("./src/assets/fonts/Nunito/Nunito-SemiBoldItalic.ttf")
+  });
+
+  if (!loaded) {
+    return null;
+  }
+
   return (
     <NavigationContainer style={styles.container}>
       <Tabs.Navigator
