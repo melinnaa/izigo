@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity } from 'react-native';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import firebase from '../../Firebase/firebase';
+import * as GoogleSignIn from 'expo-google-sign-in';
 
 const Login = ({ navigation }) => {
     const [email, setEmail] = useState('');
@@ -19,22 +20,16 @@ const Login = ({ navigation }) => {
         }
     }
 
-    const signInAsyncGoogle = async () => {
-        console.log("LoginScreen.js 6 | loggin in");
+    const initAsync = async () => {
         try {
-          const { type, user } = await Google.logInAsync({
-            iosClientId: `509557147546-k10u0ef4hii58adpus1mp112eulqhigp.apps.googleusercontent.com`,
-          });
-    
-          if (type === "success") {
-            // Then you can use the Google REST API
-            console.log("LoginScreen.js 17 | success, navigating to profile");
-            navigation.navigate("Profile", { user });
-          }
-        } catch (error) {
-          console.log("LoginScreen.js 19 | error with login", error);
-        }
-      };
+            await GoogleSignIn.initAsync({
+                clientId: '509557147546-k10u0ef4hii58adpus1mp112eulqhigp.apps.googleusercontent.com',
+            });
+        } catch ({ message }) {
+            alert('GoogleSignIn.initAsync(): ' + message);
+        };
+    }
+
 
     return (
         <View style={styles.container}>
@@ -88,8 +83,8 @@ const Login = ({ navigation }) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.icon}
-                    onPress={signInAsyncGoogle} >
-                    <Ionicons name={"logo-google"} size={40}/>
+                    onPress={initAsync} >
+                    <Ionicons name={"logo-google"} size={40} />
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.icon}>
@@ -102,7 +97,7 @@ const Login = ({ navigation }) => {
                 <TouchableOpacity
                     style={styles.icon}
                     onPress={() => onAppleButtonPress().then(() => console.log('Apple sign-in complete!'))}>
-                    <Ionicons name={"logo-apple"} size={40}/>
+                    <Ionicons name={"logo-apple"} size={40} />
                 </TouchableOpacity>
             </View>
             <TouchableOpacity
