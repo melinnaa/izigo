@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import { StyleSheet, Text, View, StatusBar, TextInput, Dimensions, FlatList, SafeAreaView } from 'react-native';
+import { StyleSheet, Text, View, StatusBar, TextInput, Dimensions, FlatList, SafeAreaView, TouchableOpacity } from 'react-native';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import MapView from 'react-native-maps';
 import axios from 'axios';
-
 
 const TrafficPage = () => {
     const [line, setLine] = useState("");
     const [station, setStation] = useState("");
     const [listResults, setListResults] = useState([]);
+    const [listLines, setListLines] = useState([]);
     const [isShowingResults, setIsShowingResults] = useState(false);
 
     const formatLines = (item) => {
@@ -22,19 +22,52 @@ const TrafficPage = () => {
     const showResults = () => {
         console.log("showing")
         const data = fetchData();
+        const dataTram = fetchDataTram();
         Promise.resolve(data).then((response) => {
             const transport = new Array;
             const lignes = response.data.lines;
+            
             for (var i = 0; i < lignes.length; i++) {
                 transport.push(formatLines(lignes[i]));
-                console.log(transport)
+                //console.log(transport)
             }
+
             setIsShowingResults(true);
             setListResults(transport);
-            console.log(transport.filter(t => transport[0].code == line))
-        })
-    }
+            
+            transport.forEach((d) =>{
+                if(d.code==line){
+                    search = {id: d.id, name:d.name, code:d.code}
+                    setListLines([...listLines,search]);
+                }
 
+                
+            })
+
+        })
+
+        /*Promise.resolve(dataTram).then((response) => {
+
+            const tram = new Array;
+            const tramLines = response.data.lines;
+
+            for (var i = 0; i < tramLines.length; i++) {
+                tram.push(formatLines(tramLines[i]));
+            }
+            setIsShowingResults(true);
+        
+
+            tram.forEach((d) =>{
+                if(d.code==line){
+                    search = {id: d.id, name:d.name, code:d.code}
+                    setListLines([...listLines,search]);
+                }
+                
+            })
+
+        })*/
+    }
+   
     const fetchData = async () => {
         try {
             const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/physical_modes/physical_mode%3AMetro/lines?", {
@@ -49,9 +82,10 @@ const TrafficPage = () => {
         }
     }
 
-    const fetchDataBus = async () =>{
+
+    const fetchDataTram = async () =>{
         try {
-            const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/physical_modes/physical_mode%3AMetro/lines?", {
+            const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/physical_modes/physical_mode%3ATramway/lines?", {
                 headers: {
                     'Authorization': `7a9c06ed-e0b6-4bc3-a7da-f27d4cbee972`,
                 }
@@ -63,14 +97,8 @@ const TrafficPage = () => {
         }
     }
 
-    const handleSubmit = () => {
-        searchLine(line).then((result) => {
-            setListResults(result);
-            console.log(formatResponse(result).lines);
-        });
+    console.log(listLines);
 
-    };
-    console.log(listResults);
     /**
      * Wait to display the list of results
      */
@@ -78,6 +106,7 @@ const TrafficPage = () => {
         const timeout = setTimeout(showResults, 1000);
         return () => {
             clearTimeout(timeout);
+            //setListLines([]);
         };
     }, [line]);
 
@@ -160,12 +189,12 @@ const TrafficPage = () => {
                 </View>
                 <SafeAreaView style={{flex:1}}>
                     <FlatList
-                        data={listResults}
+                        data={listLines}
                         renderItem={({item}) => (
-                            <View style={styles.itemContainer}>
+                            <TouchableOpacity style={styles.itemContainer}>
                                 <Text style={styles.items}>{item.code}</Text>
                                 <Text style={[styles.items,{paddingLeft:5}]}>{item.name}</Text>
-                            </View>
+                            </TouchableOpacity>
                         )}
                         keyExtractor={(item) => item.id}
                     />
