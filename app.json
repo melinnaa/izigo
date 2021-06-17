@@ -17,7 +17,14 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "https://izigo-82ed2.firebaseapp.com/__/auth/handler",
+      "config":{
+        "gooleSignIn": {
+          "reservedClientId": "com.googleusercontent.apps.878029325287-r8csg4nihuq3nhalvtrc6778krvhaogc"
+        }
+      },
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
