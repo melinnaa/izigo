@@ -1,20 +1,18 @@
-import React from 'react'
-import { StyleSheet, Text, View } from 'react-native';
+import * as React from 'react'
+import { createStackNavigator } from '@react-navigation/stack';
+import Login from '../components/Authentification/Login'
+import Register from '../components/Authentification/Register'
 
-const AccountPage = () => {
-    return (
-        <View style={styles.container}>
-            <Text>AccountPage</Text>
-        </View>
-    )
+const Stack = createStackNavigator();
+
+export default function AccountPage() {
+  return (
+    <Stack.Navigator
+    screenOptions={{
+        headerShown: false
+      }}>
+      <Stack.Screen name="Login" component={Login} />
+      <Stack.Screen name="Register" component={Register} />
+    </Stack.Navigator>
+  );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        flexDirection: 'column',
-        margin: 1
-    },
-})
-
-export default AccountPage;

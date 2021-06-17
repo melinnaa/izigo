@@ -51,6 +51,7 @@ const Report = () => {
                     }
                     placeholder={'Qui de neuf sur la ligne ?'}
                     style={styles.input}
+                    multiline={true}
                 />
 
                 <TextInput
@@ -60,6 +61,7 @@ const Report = () => {
                     }
                     placeholder={'#RATP #ligne13'}
                     style={styles.inputHashtag}
+                    multiline={true}
                 />
                 <TouchableOpacity
                     activeOpacity={0.7}
@@ -139,7 +141,7 @@ const styles = StyleSheet.create({
         color: '#000000',
     },
     input: {
-        borderColor: 'grey',
+        borderColor: '#D3D3D3',
         opacity: 1,
         top: 300,
         height: 150,
@@ -147,11 +149,11 @@ const styles = StyleSheet.create({
         margin: 1,
         borderWidth: 1,
         borderRadius: 20,
-        fontSize: 20
+        fontSize: 18
 
     },
     inputHashtag: {
-        borderColor: 'grey',
+        borderColor: '#D3D3D3',
         opacity: 1,
         top: 310,
         height: 70,
@@ -159,7 +161,7 @@ const styles = StyleSheet.create({
         margin: 1,
         borderWidth: 1,
         borderRadius: 20,
-        fontSize: 20
+        fontSize: 18
     },
     submit: {
         top: 350,

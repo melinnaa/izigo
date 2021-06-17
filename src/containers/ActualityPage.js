@@ -7,7 +7,7 @@ import Report from '../components/actuality/Report'
 
 const Stack = createStackNavigator();
 
-export default function MyStack() {
+export default function ActualityPage() {
   return (
     <Stack.Navigator
     screenOptions={{
