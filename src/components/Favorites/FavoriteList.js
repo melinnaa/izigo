@@ -64,7 +64,7 @@ const FavoriteList = ({ navigation }) => {
                             <Ionicons name="navigate-outline" size={35} color="#000000" />
                             <Text style={styles.item}>{item.departure} - {item.arrival}</Text>
                         </View>
-                        <TouchableOpacity onPress={() => navigation.navigate("FavoriteDetails", { props: item })}>
+                        <TouchableOpacity key={item.id} onPress={() => navigation.navigate("FavoriteDetails", { props: item })}>
                             <Ionicons name="chevron-forward-outline" size={35} color="#000000" />
                         </TouchableOpacity>
                     </View>

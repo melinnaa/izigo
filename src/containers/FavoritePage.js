@@ -18,11 +18,13 @@ const FavoritePage = () => {
                 name="FavoriteList" 
                 component={FavoriteList} 
                 options={{title:'List'}}
+                initialParams={{ props: "no props" }}
             />
             <Stack.Screen 
                 name="FavoriteDetails" 
                 component={FavoriteDetails} 
                 options={{title:'Details'}}
+                initialParams={{ props: "no props" }}
             />
            
         </Stack.Navigator>
