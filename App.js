@@ -9,11 +9,28 @@ import HomePage from "./src/containers/HomePage";
 import FavoritePage from './src/containers/FavoritePage';
 import ActualityPage from "./src/containers/ActualityPage";
 import AccountPage from './src/containers/AccountPage';
-import TrafficPage from './src/containers/TrafficPage';
+import TrafficPage from './src/containers/TrafficPage'; 
+import * as firebase from "firebase";
+import { LogBox } from 'react-native';
+
+LogBox.ignoreLogs(['Setting a timer']);
+
 
 const Tabs = createBottomTabNavigator();
 
 const App = () =>{
+
+  var firebaseConfig = {
+    apiKey: 'AIzaSyAKlKfsLPKsDGkGYqv9jIq6rbChAxebaF4 ',
+    authDomain: 'izigo-82ed2.firebaseapp.com',
+    databaseURL: "https://izigo-82ed2.firebaseio.com",
+    storageBucket: "izigo-82ed2.appspot.com",
+    projectId: 'izigo-82ed2'
+  }
+  
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
 
   const [loaded] = useFonts({
     NunitoBlack: require("./src/assets/fonts/Nunito/Nunito-Black.ttf"),
@@ -111,8 +128,6 @@ const App = () =>{
   );
 }
 
-export default App;
-
 const styles = StyleSheet.create({
   container: {
       flex: 1,
@@ -121,3 +136,5 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
   },
 });
+
+export default App;

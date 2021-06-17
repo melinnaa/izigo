@@ -1,9 +1,10 @@
-import React from "react";
+import React, {useState} from "react";
 import { StyleSheet, Text, View, TouchableOpacity, FlatList } from 'react-native';
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 const FavoriteDetails = ({ route, navigation }) => {
     const { props } = route.params;
+    const [transportName,setTransportName] = useState("");
 
     return (
         <View style={styles.container}>
@@ -11,17 +12,17 @@ const FavoriteDetails = ({ route, navigation }) => {
                 <TouchableOpacity style={styles.buttonBack} onPress={() => navigation.goBack()}>
                     <Ionicons name="arrow-back-outline" size={25} color="#ffffff" />
                 </TouchableOpacity>
-                <Text style={styles.titleText}>{props.course}</Text>
+                <Text style={styles.titleText}>{props.departure} - {props.arrival}</Text>
             </View>
             <View style={styles.itemsContainer}>
                 <Ionicons name="hourglass-outline" size={30} color="#000000" />
                 <Text style={styles.itemsText}>Temps moyen du parcours</Text>
-                <Text style={styles.dataText}>{props.tempsMoyen} min</Text>
+                <Text style={styles.dataText}>{props.timeOfCourse} min</Text>
             </View>
             <View style={styles.itemsContainer}>
                 <Ionicons name="time-outline" size={30} color="#000000" />
                 <Text style={styles.itemsText}>Horaires habituels</Text>
-                <Text style={styles.dataText}>{props.horaires}</Text>
+                <Text style={styles.dataText}>{props.timeOfDeparture} - {props.timeOfArrival}</Text>
             </View>
             <View style={styles.itemsContainer}>
                 <Ionicons name="navigate-outline" size={30} color="#000000" />
@@ -29,12 +30,12 @@ const FavoriteDetails = ({ route, navigation }) => {
                 <Text></Text>
             </View>
             {
-                props.correspondances.map(({ ligne, depart, arrivee }) =>
+                props.connections.map(({ idTransport, startPoint, stopPoint }) =>
                     <View style={styles.connectionContainer}>
-                        <Text style={styles.lineText}>{ligne}</Text>
-                        <Text style={styles.connectionsText}>{depart}</Text>
+                        <Text style={styles.lineText}>{idTransport}</Text>
+                        <Text style={styles.connectionsText}>{startPoint}</Text>
                         <Text style={styles.connectionsText}> {">"} </Text>
-                        <Text style={styles.connectionsText}>{arrivee}</Text>
+                        <Text style={styles.connectionsText}>{stopPoint}</Text>
                     </View>
 
                 )
@@ -47,12 +48,12 @@ const FavoriteDetails = ({ route, navigation }) => {
             <View style={styles.itemsContainer}>
                 <Ionicons name="people-outline" size={30} color="#000000" />
                 <Text style={styles.itemsText}>Affluence</Text>
-                <Text style={styles.dataText}>{props.affluence}</Text>
+                <Text style={styles.dataText}>{props.crowd}</Text>
             </View>
             <View style={styles.itemsContainer}>
                 <Ionicons name="calendar-outline" size={30} color="#000000" />
                 <Text style={styles.itemsText}>Utilisation moyenne dans la semaine</Text>
-                <Text style={styles.dataText}>{props.utilisation}</Text>
+                <Text style={styles.dataText}>{props.usage}</Text>
             </View>
         </View>
     )
@@ -109,32 +110,32 @@ const styles = StyleSheet.create({
         alignItems: "center"
     },
     connectionsText: {
-        fontFamily:"NunitoBold",
-        fontSize:14
+        fontFamily: "NunitoBold",
+        fontSize: 14
     },
-    lineText:{
-        paddingRight:10,
+    lineText: {
+        paddingRight: 10,
         fontFamily: 'NunitoBold',
         fontSize: 14,
-    }, 
-    buttonContainer:{
-        justifyContent:"center",
-        alignItems:"center",
+    },
+    buttonContainer: {
+        justifyContent: "center",
+        alignItems: "center",
         //backgroundColor:"#FE596F",
-        marginVertical:15
+        marginVertical: 15
     },
-    buttonItinerary:{
-        backgroundColor:"#FE596F",
-        width:140,
-        height:60,
-        borderRadius:6,
-        paddingVertical:20,
-        paddingHorizontal:20
+    buttonItinerary: {
+        backgroundColor: "#FE596F",
+        width: 140,
+        height: 60,
+        borderRadius: 6,
+        paddingVertical: 20,
+        paddingHorizontal: 20
     },
-    buttonText:{
-        fontFamily:'NunitoBold',
-        fontSize:14,
-        color:"white"
+    buttonText: {
+        fontFamily: 'NunitoBold',
+        fontSize: 14,
+        color: "white"
     }
 });
 
