@@ -9,10 +9,12 @@ const Stack = createStackNavigator();
 
 const HomePage = () => {
     return (
-        <Stack.Navigator>
-            <Stack.Screen name="Main" component={Main} options={{ title: 'IziGo' }}/>
-            <Stack.Screen name="Search" component={Search} options={{ title: 'Recherche' }}/>
-            <Stack.Screen name="Itinerary" component={Itinerary} options={{ title: 'Itinéraire' }}/>
+        <Stack.Navigator screenOptions={{
+            headerShown: false,
+          }}>
+            <Stack.Screen name="Main" component={Main}/>
+            <Stack.Screen name="Search" component={Search}/>
+            <Stack.Screen name="Itinerary" component={Itinerary}/>
         </Stack.Navigator>
          
     )

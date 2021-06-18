@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { StyleSheet, Text, View, StatusBar, TextInput, Dimensions, TouchableOpacity, Button } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, Button, FlatList } from 'react-native';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import axios from 'axios';
 import MapView, { Marker } from 'react-native-maps';
@@ -7,6 +7,7 @@ import * as Location from 'expo-location';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
 const Search = ({navigation}) => {
+    const [isShowingResults, setIsShowingResults] = useState(false)
     const [location, setLocation] = useState(null);
     const [errorMsg, setErrorMsg] = useState(null);
 
@@ -25,6 +26,7 @@ const Search = ({navigation}) => {
     });
 
     const [itinerary, setItinerary] = useState({
+        //id
         //durée: "duration"
         //les différentes parties du parcours (metro, marche, etc): sections
         //heure de départ: "departure_date_time"
@@ -64,12 +66,13 @@ const Search = ({navigation}) => {
                 itineraries.push(formatItinerary(journeys[i]));
             }
             setItineraries(itineraries);
+            setIsShowingResults(true);
         })
     }
 
     const fetchData = async() => {
         try {
-            const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/journeys?from=2.3488%3B48.8534&to=2.2922926%3B48.8583736&", {
+            const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/journeys?from="+departure.longitude+"%3B"+departure.latitude+"&to="+arrival.longitude+"%3B"+arrival.latitude+"&", {
                 headers: {
                     'Authorization':`7a9c06ed-e0b6-4bc3-a7da-f27d4cbee972`,
                 }
@@ -83,11 +86,23 @@ const Search = ({navigation}) => {
 
     const formatItinerary = (itinerary) => {
         return {
+            id: guidGenerator(),
             duration: itinerary.duration,
             sections: itinerary.sections,
             departure_date_time: itinerary.departure_date_time,
             arrival_date_time: itinerary.arrival_date_time
         }
+    }
+
+    const showItinerary = (itinerary) => {
+        navigation.navigate("Itinerary", {itinerary: itinerary});
+    }
+
+    const guidGenerator = () => {
+        var S4 = function() {
+           return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+        };
+        return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
     }
 
     return (
@@ -192,6 +207,7 @@ const Search = ({navigation}) => {
                 </View>
         
             </View>
+            {isShowingResults === false &&
             <MapView 
                 style={styles.map}
                 provider={MapView.PROVIDER_GOOGLE}
@@ -202,8 +218,76 @@ const Search = ({navigation}) => {
                     longitudeDelta: 0.04
                 }}
             />
-            
+            }
+            {isShowingResults === true &&
+            <FlatList
+            data={itineraries}
+            renderItem={({item}) => 
+                <TouchableOpacity onPress={() => showItinerary(item)} >
+                    <View style={styles.line}>
+                        <View style={styles.details_line}>
+                            <View style={styles.schema}>
+                                {item.sections.map((section) => {
+                                    if (section.type === "public_transport") {
+                                        return (
+                                            <View style={styles.step}>
+                                                <Text>
+                                                    {/* REMPLACER PAR DES ICONES */}
+                                                    {section.display_informations.commercial_mode}
+                                                    {section.display_informations.label}
+                                                </Text>
+                                                <View>
+                                                    <Text style={styles.step_separator}>
+                                                        {'>'}
+                                                    </Text>
+                                                </View>
+                                            </View>
+                                        )
+                                    }
 
+                                    else if (section.type === "street_network"){
+                                        return (
+                                            <View style={styles.step}>
+                                                <Ionicons name={"walk"} size={25} />
+                                                <Text>
+                                                    {/* afficher le petit bonhomme + durée en secondes */}
+                                                    {Math.round(section.duration/60)} mn
+                                                    
+                                                </Text>
+                                                <View>
+                                                    <Text style={styles.step_separator}>
+                                                        {'>'}
+                                                    </Text>
+                                                </View>
+                                            </View>       
+                                        )
+                                    }
+                                    
+                                })}
+
+                            </View>
+                            
+                            <View style={styles.departures_time}>
+                                <Text></Text>
+                            </View>
+                        </View>
+                    
+                        <View style={styles.duration}>
+                            <Text style={styles.duration_number}>
+                                {Math.round(item.duration/60)}
+                            </Text>
+                            <Text style={styles.duration_text}>
+                                min
+                            </Text>
+                        </View>
+                
+                    </View>
+                </TouchableOpacity>
+            }
+
+            keyExtractor= {item => item.id} 
+            />}
+                    
         </View>
     )
 }
@@ -217,6 +301,7 @@ const styles = StyleSheet.create({
     inputsBoxContainer:{
         paddingHorizontal:10,
         paddingVertical:23,
+        paddingTop: 70,
         backgroundColor:"#FE596F",
         borderRadius:10
     },
@@ -261,7 +346,7 @@ const styles = StyleSheet.create({
     closeIcon:{
         position:'absolute',
         display:"flex",
-        top: 15,
+        top: 60,
         left: 15
     },
 
@@ -277,6 +362,38 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         marginTop: 10,
         alignItems: 'center'
+    },
+
+    //CSS for resultsView
+
+    line: {
+        flexDirection: "row",
+        justifyContent: 'space-between',
+        alignItems: 'baseline',
+        padding: 15
+    },
+
+    schema: {
+        flexDirection: "row",
+        alignItems: 'baseline'
+    },
+
+    step: {
+        flexDirection: "row",
+        alignItems: 'baseline'
+    },
+    step_separator: {
+        marginHorizontal: 10
+    },
+    duration: {
+        flexDirection: "row",
+        alignItems: 'baseline'
+    },
+    duration_number: {
+        fontSize: 30
+    },
+    duration_text: {
+        fontSize: 15
     }
 })
 
