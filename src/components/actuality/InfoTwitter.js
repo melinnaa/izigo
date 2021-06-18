@@ -1,11 +1,32 @@
 import React, { useEffect, useState } from "react"
-import { StyleSheet, View, Text, TouchableHighlight, Button } from 'react-native';
+import { StyleSheet, View, Text, TouchableHighlight, TouchableOpacity } from 'react-native';
+import Ionicons from "react-native-vector-icons/Ionicons";
+
 import axios from "axios";
 
-const InfoTwitter = ({ navigation }) => {
-    const getData = async () => {
+const InfoTwitter = ({ navigation, route }) => {
+
+    const [data, setdata] = useState("")
+
+    const handleSubmit = () => {
+        getTransportIdFromApi(search).then((result) => {
+            console.log(result);
+            setSearch(result);
+        });
+    }
+
+    useEffect(() => {
+        const timeout = setTimeout(handleSubmit, 800)
+        return () => {
+            clearTimeout(timeout)
+        }
+    }, [search])
+
+    const title = route.params;
+    console.log(title)
+    const getTransportIdFromApi = async () => {
         try {
-            const resp = await axios.get("https://api.twitter.com/1.1/search/tweets.json?q=RATP", {
+            const resp = await axios.get(`https://api.twitter.com/2/users/by/username/${title}`, {
                 headers: {
                     Authorization: `Bearer ${'AAAAAAAAAAAAAAAAAAAAABABQgEAAAAA9SXFVGSLYdYaBrn9jGFD6queSrY%3DV5KKLwEUJKio24ggY4JjnuRMTa33z5uWDhqKPQBTyCaazHjEkL'}`,
                     "Access-Control-Allow-Origin": "http://localhost:19006/",
@@ -21,7 +42,7 @@ const InfoTwitter = ({ navigation }) => {
     };
 
     useEffect(() => {
-        getData();
+        getTransportIdFromApi();
     }, []);
 
     return (
@@ -29,12 +50,13 @@ const InfoTwitter = ({ navigation }) => {
             <Text style={styles.title}>Info Traffic</Text>
             <View style={styles.rectangle}></View>
             <Text style={styles.text}>Trafic normal</Text>
-            <Text style={styles.text2}>Tout roule sur la ligne ..</Text>
+            <Text style={styles.text2}>Tout roule sur la ligne {title}</Text>
 
             <View style={styles.screenButton}>
                 <TouchableHighlight
-                    style={styles.submit}>
-                    <Text style={styles.submitText}>Vois plus de tweets</Text>
+                    style={styles.submit}
+                    onPress={() => navigation.navigate('LineInfo')}>
+                    <Text style={styles.submitText}>Voir plus de tweets</Text>
                 </TouchableHighlight>
                 <TouchableHighlight
                     style={styles.submit}
@@ -42,6 +64,16 @@ const InfoTwitter = ({ navigation }) => {
                     <Text style={styles.submitText}>Tweeter</Text>
                 </TouchableHighlight>
             </View>
+
+            <TouchableOpacity style={styles.touchableTwo}
+				onPress={() => handleSubmit(item.id)}>
+				<Ionicons
+					name="plus"
+					color="white"
+					size={20}
+				/>
+			</TouchableOpacity>
+            
         </View>
 
     )
@@ -71,9 +103,9 @@ const styles = StyleSheet.create({
     rectangle: {
         position: 'absolute',
         width: 500,
-        height: 60,
+        height: 80,
         left: -20,
-        top: 140,
+        top: "15%",
         backgroundColor: '#FE596F',
         borderRadius: 24,
         shadowColor: '#000',
@@ -85,12 +117,11 @@ const styles = StyleSheet.create({
         position: 'absolute',
         left: '19.73%',
         right: '5.6%',
-        top: '17.49%',
+        top: '16%',
         bottom: '79.56%',
         fontStyle: 'normal',
         fontWeight: 'bold',
         fontSize: 18,
-        lineHeight: 25,
         display: 'flex',
         alignItems: 'center',
         color: '#FFFFFF',
@@ -99,18 +130,17 @@ const styles = StyleSheet.create({
         position: 'absolute',
         left: '19.73%',
         right: '5.6%',
-        top: '22%',
+        top: '18%',
         bottom: '79.56%',
         fontStyle: 'normal',
         fontWeight: 'bold',
         fontSize: 18,
-        lineHeight: 25,
         display: 'flex',
         alignItems: 'center',
-        color: '#FFFFFF',
+        color: 'white',
     },
     screenButton: {
-        flex: 1,
+        top: "50%",
         justifyContent: 'center',
         alignItems: 'center',
     },

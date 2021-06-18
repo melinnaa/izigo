@@ -1,49 +1,67 @@
-import React from 'react'
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from "react"
+import { StyleSheet, View, Text, useWindowDimensions } from 'react-native';
+import HTML from "react-native-render-html";
 
-const LineInfo = () => {
+const htmlContent = `
+<a class="twitter-timeline" href="https://twitter.com/T1_RATP?ref_src=twsrc%5Etfw">Tweets by T1_RATP</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+`;
+
+const LineInfo = ({ route }) => {
+    const title = route.params;
+    console.log(title)
+    
+    const contentWidth = useWindowDimensions().width;
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Info Traffic</Text>
-            <View style={styles.rectangle}></View>
-
+        <View>
+            <HTML source={{ html: htmlContent }} contentWidth={contentWidth} />
         </View>
+
     )
 }
 
+
+/*
+const InfoTwitter = () => {
+    
+    /*
+    const [search, setSearch] = useState("")
+    const [listTweets, setListTweets] = useState([])
+
+    const handleSubmit = () => {
+        searchTweetAPI(search).then((result) => {
+          console.log(result);
+          setListTweets(result);
+        });
+    };
+
+    useEffect(() => {
+        const timeout = setTimeout(handleSubmit, 800)
+        return () => {
+            clearTimeout(timeout)
+        }
+    }, [search])
+
+    return (
+        <View><Text>Here comes twitter api !</Text></View>
+    );
+
+    useEffect(() => {
+        fetch(
+            ""
+        ).then ((reponse) => {
+            if (response.ok) {
+                return reponse.json();
+            }
+        }).then(data => {
+            console.log(data.results);
+        })
+    })
+}*/
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         flexDirection: 'column',
         margin: 1
-    },
-    title: {
-        position: 'absolute',
-        height: 50,
-        left: '25%',
-        top: 60,
-        fontFamily: 'Roboto',
-        fontStyle: 'normal',
-        fontWeight: 'bold',
-        fontSize: 42,
-        lineHeight: 49,
-        display: 'flex',
-        alignItems: 'center',
-        textAlign: 'center',
-        color: '#000000',
-    },
-    rectangle: {
-        position: 'absolute',
-        width: 500,
-        height: 60,
-        left: -20,
-        top: 140,
-        backgroundColor: '#FE596F',
-        borderRadius: 24,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.5,
-        shadowRadius: 5,
     },
 })
 
