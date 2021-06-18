@@ -11,9 +11,6 @@ import ActualityPage from "./src/containers/ActualityPage";
 import AccountPage from './src/containers/AccountPage';
 import TrafficPage from './src/containers/TrafficPage'; 
 import * as firebase from "firebase";
-import { LogBox } from 'react-native';
-
-LogBox.ignoreLogs(['Setting a timer']);
 
 
 const Tabs = createBottomTabNavigator();
