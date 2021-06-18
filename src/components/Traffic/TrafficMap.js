@@ -39,7 +39,7 @@ const TrafficMap = ({route}) => {
             
             for (var i = 0; i < stop_areas.length; i++) {
                 line.push(formatLines(stop_areas[i]));
-                console.log(line)
+                //console.log(line)
             }
             
             line.forEach((d) =>{
@@ -74,14 +74,24 @@ const TrafficMap = ({route}) => {
                     longitudeDelta: 0.04
                 }}
             />
+            <Marker 
+                title="test"
+                description="test for marker"
+                pinColor='red'
+                coordinate={{latitude:coords[0].coord.lat,longitude:coords[0].coord.lon}}   
+            />
             {
-                coords.map(({coord}) => 
-                    <Marker
-                        pinColor='blue'
-                        coordinate={{latitude:coord.lat,longitude:coord.long}}
+                coords.map(({coord})=>
+                    <Marker 
+                        title="test"
+                        description="test for marker"
+                        pinColor='red'
+                        coordinate={{latitude:coord.lat,longitude:coord.lon}}
+                    
                     />
                 )
             }
+           
         </View>
     )
 }
