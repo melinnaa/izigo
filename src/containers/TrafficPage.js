@@ -148,16 +148,11 @@ const styles = StyleSheet.create({
         paddingRight:0,
         width: 350,
         backgroundColor:"white",
-<<<<<<< HEAD
-        color:"#959595",
-        fontFamily:"Nunito"
-=======
         color:"#000000",
         display:"flex",
         alignItems:"center",
         position: "absolute",
         //fontFamily:"Nunito-Bold"
->>>>>>> ad484ac (test recuperation donnees API)
     },
     icon:{
         position:'absolute',
