@@ -13,6 +13,7 @@ const TrafficMap = ({route}) => {
         return {
             coord: item.coord,
             id: item.id,
+            label:item.label
         }
     }
 
@@ -39,11 +40,10 @@ const TrafficMap = ({route}) => {
             
             for (var i = 0; i < stop_areas.length; i++) {
                 line.push(formatLines(stop_areas[i]));
-                //console.log(line)
             }
-            
+
             line.forEach((d) =>{
-                coord = {coord: d.coord}
+                coord = {lat:parseFloat(d.coord.lat), lon:parseFloat(d.coord.lon)}
                 setCoords([...coords,coord]);
             })
         })
@@ -78,20 +78,18 @@ const TrafficMap = ({route}) => {
                 title="test"
                 description="test for marker"
                 pinColor='red'
-                coordinate={{latitude:coords[0].coord.lat,longitude:coords[0].coord.lon}}   
+                coordinate={{latitude:48.8534,longitude:2.3488}}
             />
             {
-                coords.map(({coord})=>
+                coords.map(({lat,lon})=>
                     <Marker 
                         title="test"
                         description="test for marker"
                         pinColor='red'
-                        coordinate={{latitude:coord.lat,longitude:coord.lon}}
-                    
+                        coordinate={{latitude:lat,longitude:lon}}
                     />
                 )
             }
-           
         </View>
     )
 }

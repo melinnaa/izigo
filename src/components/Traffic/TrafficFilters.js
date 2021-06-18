@@ -40,8 +40,6 @@ const TrafficFilters= ({navigation}) => {
                     search = {id: d.id, name:d.name, code:d.code}
                     setListLines([...listLines,search]);
                 }
-
-                
             })
 
         })
