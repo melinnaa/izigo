@@ -13,7 +13,7 @@ const imagesTram = [
     { id: 9, src: require('../../assets/img/transports/tram/T8.png'), title: 'T8_RATP', description: 'T8' },
     { id: 10, src: require('../../assets/img/transports/tram/T9.png'), title: 'T9_RATP', description: 'T9' },
     { id: 11, src: require('../../assets/img/transports/tram/T11.png'), title: 'Tram11Express', description: 'T11' },
-];
+]; 
 const imagesMetro = [
     { id: 12, src: require('../../assets/img/transports/metro/Metro1.png'), title: 'Ligne1_RATP', description: 'm1' },
     { id: 13, src: require('../../assets/img/transports/metro/Metro2.png'), title: 'Ligne2_RATP', description: 'm2' },
@@ -63,7 +63,7 @@ const Filtre = ({ navigation, title }) => {
             <View style={styles.containerRER}>
                 <Image style={styles.imageR} source={require('../../assets/img/transports/rer/rer.png')} />
                 {imagesRER.map(({ id, src, title, description }) =>
-                    <TouchableOpacity key={id} onPress={() => navigation.navigate('InfoTwitter')}>
+                    <TouchableOpacity key={id} onPress={() => navigation.navigate('InfoTwitter', title)}>
                         <Image style={styles.imageRER} key={id} source={src} title={title} alt={description} />
                     </TouchableOpacity>)}
             </View>
@@ -77,7 +77,7 @@ const Filtre = ({ navigation, title }) => {
             <View style={styles.containerMetro}>
                 <Image style={styles.imageM} source={require('../../assets/img/transports/metro/metro.png')} />
                 {imagesMetro.map(({ id, src, title, description }) =>
-                    <TouchableOpacity key={id} onPress={() => navigation.navigate('InfoTwitter')}>
+                    <TouchableOpacity key={id} onPress={() => navigation.navigate('InfoTwitter', title)}>
                         <Image style={styles.imageMetro} key={id} source={src} title={title} alt={description} />
                     </TouchableOpacity>)}
             </View>

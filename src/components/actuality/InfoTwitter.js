@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react"
 import { StyleSheet, View, Text, TouchableHighlight, Linking, Image, FlatList } from 'react-native';
 import axios from "axios";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
-const InfoTwitter = ({ navigation, route, dueDate }) => {
+const InfoTwitter = ({ navigation, route }) => {
     const [idTransport, setidTransport] = useState([]);
     const [dataTransport, setdataTransport] = useState([]);
-    const title = route.params;
-    var monthNames = [
+    const title = route.params;  
+    var monthNames = [ 
         "Janvier", "Février", "Mars",
         "Avril", "Mai", "Juin", "Juillet",
         "Août", "Septembre", "Octobre",
@@ -66,16 +67,24 @@ const InfoTwitter = ({ navigation, route, dueDate }) => {
         const data = getDataTransport();
         Promise.resolve(data).then((response) => {
             const mydata = response.data.data;
-            const tab = [];
+            const tab = []; 
             for (var i = 0; i < 3; i++) {
                 tab.push(mydata[i].text)
-            }
+            }  
             setdataTransport(tab);
-        })
+        }) 
     }
     console.log(dataTransport)
     return (
         <View style={styles.container}>
+            <Ionicons
+                    name={'arrow-back'} size={35}
+                    title=""
+                    style={styles.returnButton}
+                    onPress={() => {
+                        navigation.goBack();
+                    }} 
+                />
             <Text style={styles.title}>Info Traffic</Text>
             <View style={styles.rectangle}></View>
             <Text style={styles.text}>Trafic sur {title}</Text>
@@ -84,10 +93,10 @@ const InfoTwitter = ({ navigation, route, dueDate }) => {
                 data={dataTransport}
                 renderItem={({ item }) => (
                     <View>
-                        <Text style={styles.titleLigne}>{title}     <Image style={styles.imageCheck} source={require('../../assets/img/transports/check.png')} /> <Text style={{color:"#D0D0D0", fontSize: 15}}>{date} {Month}</Text></Text>  
+                        <Text style={styles.titleLigne}>{title}     <Image style={styles.imageCheck} source={require('../../assets/img/transports/check.png')} />   <Text style={{color:"#D0D0D0", fontSize: 13}}>@{title} - </Text><Text style={{color:"#D0D0D0", fontSize: 13}}>{date} {Month}</Text></Text>  
                         <Text style={styles.textDetail}>{item}</Text> 
-                        <View   
-                            style={{
+                        <View     
+                            style={{ 
                                 borderBottomColor: '#D0D0D0', 
                                 borderBottomWidth: 1,
                                 width: "97%"
@@ -120,7 +129,13 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'column',
         margin: 1
-    }, title: {
+    }, 
+    returnButton:{
+        top: "5%",
+        zIndex: 2, 
+        left: "5%",
+    },
+    title: {
         position: 'absolute',
         height: 50,
         left: '25%',
@@ -134,12 +149,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         textAlign: 'center',
         color: '#000000',
+        zIndex: 1,
     },
     rectangle: {
         position: 'absolute',
         width: 500,
         height: 80,
         left: -20,
+        zIndex: 2, 
         top: "15%",
         backgroundColor: '#FE596F',
         borderRadius: 24,
@@ -156,10 +173,15 @@ const styles = StyleSheet.create({
         bottom: '79.56%',
         fontStyle: 'normal',
         fontWeight: 'bold',
+        zIndex: 3,
         fontSize: 20,
         display: 'flex',
         alignItems: 'center',
         color: '#FFFFFF',
+    },
+    flatlist: {
+        marginLeft: 10,
+        paddingTop: "50%"
     },
     textDetail:{
         padding: 10,
@@ -177,13 +199,14 @@ const styles = StyleSheet.create({
     screenButton: {
         justifyContent: 'center',
         alignItems: 'center',
+        top: "3%"
     },
     submit: { 
         marginRight: 50,
         marginLeft: 40,
         marginTop: 10,
         top: "-110%",
-        padding: 20,
+        padding: 15,
         backgroundColor: '#FE596F',
         borderRadius: 40,
         borderWidth: 1,
@@ -194,10 +217,6 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 20
     },
-    flatlist: {
-        marginLeft: 10,
-        paddingTop: "60%"
-    }
 })
 
 export default InfoTwitter;
