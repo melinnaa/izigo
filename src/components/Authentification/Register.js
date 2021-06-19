@@ -1,19 +1,28 @@
-import React, {useState} from 'react';
-import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity, Alert } from 'react-native';
 import firebase from '../../Firebase/firebase'
 
-const Register = ({navigation}) => {
+const Register = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
-    const signUp = async()=>{
-        try {
-            firebase.auth().createUserWithEmailAndPassword(email, password);
-            navigation.navigate('Login');
-        }catch(err){
-            setError(err.message);
-        }
+    const signUp = async () => {
+        await firebase.auth().createUserWithEmailAndPassword(email, password).catch(err => {
+            switch (err.code) {
+                case 'auth/invalid-password':
+                    return Alert.alert('Le mot de passe doit comprendre au moins 6 caractères.');
+                    break;
+
+                case 'auth/invalid-email':
+                    return Alert.alert('Saisissez un e-mail valide');
+                    break;
+
+                default:
+                    Alert.alert("Veuillez remplir les champs");
+            }
+            return navigation.navigate('Login');
+        })
     }
 
     return (
@@ -27,6 +36,7 @@ const Register = ({navigation}) => {
                 placeholder={'Email'}
                 onChangeText={setEmail}
                 style={styles.inputName}
+                keyboardType="email-address"
                 returnKeyType='go'
             />
             <TextInput
@@ -37,22 +47,22 @@ const Register = ({navigation}) => {
                 returnKeyType='go'
             />
             {
-                error?
-                <Text style={{color : 'red'}}>{error}</Text>
-                : null
+                error ?
+                    <Text style={{ color: 'red' }}>{error}</Text>
+                    : null
             }
             <TouchableOpacity
                 activeOpacity={0.7}
                 style={styles.submit}
                 onPress={() => signUp()}
-                >
+            >
                 <Text style={styles.submitText}>S'inscrire</Text>
             </TouchableOpacity>
             <View
                 style={{
                     borderBottomColor: 'black',
                     borderBottomWidth: 2,
-                    paddingTop:"2%"
+                    paddingTop: "2%"
                 }}
             ></View>
             <Text style={styles.submitTextRegister}>Avez vous un compte ?</Text>
@@ -60,7 +70,7 @@ const Register = ({navigation}) => {
                 activeOpacity={0.7}
                 style={styles.submitSignUp}
                 onPress={() => navigation.navigate('Login')}
-                >
+            >
                 <Text style={styles.submitTextRegister}> Se connecter </Text>
             </TouchableOpacity>
         </View>

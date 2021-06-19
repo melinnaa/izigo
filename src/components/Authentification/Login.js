@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity, Alert } from 'react-native';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import firebase from '../../Firebase/firebase';
 import * as GoogleSignIn from 'expo-google-sign-in';
@@ -10,14 +10,16 @@ const Login = ({ navigation }) => {
     const [error, setError] = useState('');
 
     const signIn = async () => {
-        try {
-            firebase.auth().signInWithEmailAndPassword(email, password).then(function (user) {
-                console.log(user)
-            });
-            navigation.navigate('FavoritePage');
-        } catch (err) {
-            setError(err.message);
-        }
+        await firebase.auth().signInWithEmailAndPassword(email, password).catch(err => {
+            switch (err.code) {
+                case 'auth/invalid-email':
+                    return Alert.alert('Saisissez un e-mail valide');
+                    break;
+                default:
+                    Alert.alert("Veuillez remplir les champs");
+            }
+            return navigation.navigate('FavoritePage');
+        })
     }
 
     const initAsync = async () => {
@@ -164,6 +166,7 @@ const styles = StyleSheet.create({
         paddingLeft: 8,
     },
     submit: {
+        zIndex: 5,
         top: "17%",
         width: "55%",
         marginTop: "2%",
