@@ -19,7 +19,7 @@ const InfoTwitter = ({ navigation, route }) => {
         setRefreshing(true);
         wait(2000).then(() => setRefreshing(false));
     }, []);
-
+ 
     const getImageTransport = async () => {
         try {
             const resp = await axios.get(`https://api.twitter.com/1.1/users/show.json?user_id=${idTransport}`, {
@@ -101,7 +101,6 @@ const InfoTwitter = ({ navigation, route }) => {
             setdataTransport(tab);
         })
     }
-    console.log(ImageTransport)
     return (
         <View style={styles.container}>
             <Ionicons
@@ -160,7 +159,7 @@ const InfoTwitter = ({ navigation, route }) => {
                 </TouchableHighlight>
                 <TouchableHighlight
                     style={styles.submit}
-                    onPress={fetchImageTransport}>
+                    onPress={() => navigation.push('Report')}>
                     <Text style={styles.submitText}>Tweeter</Text>
                 </TouchableHighlight>
             </View>
@@ -241,8 +240,8 @@ const styles = StyleSheet.create({
         top: "-25%",
     },
     flatlist: {
-        marginLeft: 10,
-        top: "10%",
+        marginLeft: 0,
+        top: "12%",
     },
     textDetail: {
         padding: 10,
