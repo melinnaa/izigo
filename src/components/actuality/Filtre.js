@@ -63,7 +63,7 @@ const Filtre = ({ navigation, title }) => {
             <View style={styles.containerRER}>
                 <Image style={styles.imageR} source={require('../../assets/img/transports/rer/rer.png')} />
                 {imagesRER.map(({ id, src, title, description }) =>
-                    <TouchableOpacity key={id} onPress={() => navigation.navigate('InfoTwitter', title)}>
+                    <TouchableOpacity key={id} onPress={() => navigation.navigate('InfoTwitter',title)}>
                         <Image style={styles.imageRER} key={id} source={src} title={title} alt={description} />
                     </TouchableOpacity>)}
             </View>

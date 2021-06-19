@@ -6,16 +6,35 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 const InfoTwitter = ({ navigation, route }) => {
     const [idTransport, setidTransport] = useState([]);
     const [dataTransport, setdataTransport] = useState([]);
-    const title = route.params;  
-    var monthNames = [ 
-        "Janvier", "Février", "Mars",
-        "Avril", "Mai", "Juin", "Juillet",
-        "Août", "Septembre", "Octobre",
-        "Novembre", "Decembre"
-      ];
-    let date = new Date().getDate(); 
-    let MonthName = new Date().getMonth();
-    let Month = monthNames[MonthName];
+    const [ImageTransport, setImageTransport] = useState([]);
+
+    const title = route.params;
+    const [refreshing, setRefreshing] = React.useState(false);
+
+    const wait = (timeout) => {
+        return new Promise(resolve => setTimeout(resolve, timeout));
+    }
+
+    const refreshPage = React.useCallback(() => {
+        setRefreshing(true);
+        wait(2000).then(() => setRefreshing(false));
+    }, []);
+
+    const getImageTransport = async () => {
+        try {
+            const resp = await axios.get(`https://api.twitter.com/1.1/users/show.json?user_id=${idTransport}`, {
+                headers: {
+                    Authorization: `Bearer ${'AAAAAAAAAAAAAAAAAAAAABABQgEAAAAA9SXFVGSLYdYaBrn9jGFD6queSrY%3DV5KKLwEUJKio24ggY4JjnuRMTa33z5uWDhqKPQBTyCaazHjEkL'}`,
+                    "Access-Control-Allow-Origin": "http://localhost:19006/",
+                    "Access-Control-Allow-Credentials": true,
+                    "Content-Type": "application/json"
+                }
+            })
+            return resp;
+        } catch (err) {
+            console.log(err);
+        }
+    };
 
     const getDataTransport = async () => {
         try {
@@ -52,9 +71,17 @@ const InfoTwitter = ({ navigation, route }) => {
     };
 
     useEffect(() => {
+        fetchImageTransport();
         fetchIdTransport();
         fetchDataTransport();
-    }, []); 
+    }, []);
+
+    const fetchImageTransport = () => {
+        const data = getImageTransport();
+        Promise.resolve(data).then((response) => {
+            setImageTransport(response.data.profile_image_url);
+        })
+    }
 
     const fetchIdTransport = () => {
         const data = getTransportId();
@@ -67,25 +94,35 @@ const InfoTwitter = ({ navigation, route }) => {
         const data = getDataTransport();
         Promise.resolve(data).then((response) => {
             const mydata = response.data.data;
-            const tab = []; 
+            const tab = [];
             for (var i = 0; i < 3; i++) {
                 tab.push(mydata[i].text)
-            }  
+            }
             setdataTransport(tab);
-        }) 
+        })
     }
-    console.log(dataTransport)
+    console.log(ImageTransport)
     return (
         <View style={styles.container}>
             <Ionicons
-                    name={'arrow-back'} size={35}
-                    title=""
-                    style={styles.returnButton}
-                    onPress={() => {
-                        navigation.goBack();
-                    }} 
-                />
+                name={'arrow-back'} size={35}
+                title=""
+                style={styles.returnButton}
+                onPress={() => {
+                    navigation.goBack();
+                }}
+            />
+            <Ionicons
+                name={'refresh'} size={35}
+                title=""
+                style={styles.refreshButton}
+                onPress={refreshPage}
+            />
             <Text style={styles.title}>Info Traffic</Text>
+            <Image
+                style={styles.ImageBigTransport}
+                source={{ uri: ImageTransport }}
+            />
             <View style={styles.rectangle}></View>
             <Text style={styles.text}>Trafic sur {title}</Text>
             <FlatList
@@ -93,16 +130,25 @@ const InfoTwitter = ({ navigation, route }) => {
                 data={dataTransport}
                 renderItem={({ item }) => (
                     <View>
-                        <Text style={styles.titleLigne}>{title}     <Image style={styles.imageCheck} source={require('../../assets/img/transports/check.png')} />   <Text style={{color:"#D0D0D0", fontSize: 13}}>@{title} - </Text><Text style={{color:"#D0D0D0", fontSize: 13}}>{date} {Month}</Text></Text>  
-                        <Text style={styles.textDetail}>{item}</Text> 
-                        <View     
-                            style={{ 
-                                borderBottomColor: '#D0D0D0', 
-                                borderBottomWidth: 1,
-                                width: "97%"
-                            }} 
-                        ></View>
+                        <Image
+                            style={{ width: 50, height: 50 }}
+                            source={{ uri: ImageTransport }}
+                        />
+                        <View style={styles.tweet}>
+                            <View style={styles.descriptionTweet}>
+                                <Text style={styles.titleLigne}>{title}   <Image style={styles.imageCheck} source={require('../../assets/img/transports/check.png')} /><Text style={{ color: "#D0D0D0", fontSize: 13 }}>@{title}</Text></Text>
+                                <Text style={styles.textDetail}>{item}</Text>
+                            </View>
                         </View>
+                        <View
+                            style={{
+                                borderBottomColor: '#D0D0D0',
+                                borderBottomWidth: 1,
+                                width: "97%",
+                                top: "-20%"
+                            }}
+                        ></View>
+                    </View>
                 )}
                 keyExtractor={item => item}
             />
@@ -114,7 +160,7 @@ const InfoTwitter = ({ navigation, route }) => {
                 </TouchableHighlight>
                 <TouchableHighlight
                     style={styles.submit}
-                    onPress={() => navigation.navigate('Report')}>
+                    onPress={fetchImageTransport}>
                     <Text style={styles.submitText}>Tweeter</Text>
                 </TouchableHighlight>
             </View>
@@ -129,10 +175,15 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'column',
         margin: 1
-    }, 
-    returnButton:{
+    },
+    returnButton: {
         top: "5%",
-        zIndex: 2, 
+        zIndex: 2,
+        left: "5%",
+    },
+    refreshButton: {
+        top: "5%",
+        zIndex: 2,
         left: "5%",
     },
     title: {
@@ -156,7 +207,7 @@ const styles = StyleSheet.create({
         width: 500,
         height: 80,
         left: -20,
-        zIndex: 2, 
+        zIndex: 2,
         top: "15%",
         backgroundColor: '#FE596F',
         borderRadius: 24,
@@ -165,11 +216,17 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.5,
         shadowRadius: 5,
     },
+    ImageBigTransport: {
+        width: 60,
+        height: 60,
+        left: "80%",
+        top: "-2%"
+    },
     text: {
         position: 'absolute',
-        left: '19.73%',
+        left: '27%',
         right: '5.6%',
-        top: '17%',
+        top: '18%',
         bottom: '79.56%',
         fontStyle: 'normal',
         fontWeight: 'bold',
@@ -179,20 +236,24 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         color: '#FFFFFF',
     },
+    tweet: {
+        paddingLeft: "10%",
+        top: "-25%",
+    },
     flatlist: {
         marginLeft: 10,
-        paddingTop: "50%"
+        top: "10%",
     },
-    textDetail:{
+    textDetail: {
         padding: 10,
     },
-    titleLigne:{
+    titleLigne: {
         fontSize: 15,
         fontWeight: 'bold',
         paddingLeft: 10,
         paddingRight: 10
     },
-    imageCheck:{
+    imageCheck: {
         width: 20,
         height: 20,
     },
@@ -201,7 +262,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         top: "3%"
     },
-    submit: { 
+    submit: {
         marginRight: 50,
         marginLeft: 40,
         marginTop: 10,
