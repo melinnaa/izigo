@@ -29,7 +29,7 @@ const TrafficFilters= ({navigation}) => {
             
             for (var i = 0; i < lignes.length; i++) {
                 transport.push(formatLines(lignes[i]));
-                //console.log(transport)
+               
             }
 
             setIsShowingResults(true);
@@ -41,6 +41,7 @@ const TrafficFilters= ({navigation}) => {
                     setListLines([...listLines,search]);
                 }
             })
+
 
         })
 
@@ -88,14 +89,13 @@ const TrafficFilters= ({navigation}) => {
                     'Authorization': `7a9c06ed-e0b6-4bc3-a7da-f27d4cbee972`,
                 }
             })
+            //console.log(resp);
             return resp
 
         } catch (err) {
             console.log(err.response);
         }
     }
-
-    console.log(listLines);
 
     /**
      * Wait to display the list of results
@@ -104,7 +104,6 @@ const TrafficFilters= ({navigation}) => {
         const timeout = setTimeout(showResults, 1000);
         return () => {
             clearTimeout(timeout);
-            //setListLines([]);
         };
     }, [line]);
 
@@ -246,7 +245,7 @@ const styles = StyleSheet.create({
         display: "flex",
         alignItems: "center",
         position: "absolute",
-        //fontFamily:"Nunito-Bold"
+        fontFamily:"NunitoBold"
     },
     icon: {
         position: 'absolute',
@@ -268,7 +267,7 @@ const styles = StyleSheet.create({
     items:{
         color:"black",
         fontSize:14,
-        fontWeight:"bold"
+        fontFamily:'NunitoBold'
     }
 })
 
