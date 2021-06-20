@@ -12,6 +12,7 @@ const Search = ({navigation}) => {
     const [errorMsg, setErrorMsg] = useState(null);
 
     const [departure, setDeparture] = useState({
+        name: "",
         latitude: 48.8534,
         longitude: 2.3488,
         latitudeDelta: 0.09,
@@ -19,19 +20,12 @@ const Search = ({navigation}) => {
     });
 
     const [arrival, setArrival] = useState({
+        name: "",
         latitude: 48.8534,
         longitude: 2.3488,
         latitudeDelta: 0.09,
         longitudeDelta: 0.04
     });
-
-    const [itinerary, setItinerary] = useState({
-        //id
-        //durée: "duration"
-        //les différentes parties du parcours (metro, marche, etc): sections
-        //heure de départ: "departure_date_time"
-        //heure d'arrivée: "arrival_date_time"
-    })
 
     const [itineraries, setItineraries] = useState({
         //
@@ -46,6 +40,7 @@ const Search = ({navigation}) => {
 
     const getCurrentPosition = () => {
         (async () => {
+            console.log("wep")
         let { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
             setErrorMsg('Permission to access location was denied');
@@ -53,7 +48,7 @@ const Search = ({navigation}) => {
         }
 
         let location = await Location.getCurrentPositionAsync({});
-        setLocation(location);
+        setDeparture(location);
         })();
     }
 
@@ -85,13 +80,21 @@ const Search = ({navigation}) => {
     }
 
     const formatItinerary = (itinerary) => {
+
         return {
             id: guidGenerator(),
-            duration: itinerary.duration,
+            departure: departure,
+            arrival: arrival,
+            duration: Math.round(itinerary.duration/60), //in minutes
             sections: itinerary.sections,
-            departure_date_time: itinerary.departure_date_time,
-            arrival_date_time: itinerary.arrival_date_time
+            timeOfDeparture: getHoursMinutes(itinerary.departure_date_time), //format: HH:MM
+            timeOfArrival: getHoursMinutes(itinerary.arrival_date_time), //format: HH:MM
         }
+    }
+
+    //convert YYYYMMDDTHHMMSS to HH:MM
+    const getHoursMinutes = (dateTime) => {
+        return dateTime.substr(-6).substr(0, 2) + ":" + dateTime.substr(-6).substr(2, 2);
     }
 
     const showItinerary = (itinerary) => {
@@ -115,8 +118,12 @@ const Search = ({navigation}) => {
                 <GooglePlacesAutocomplete
                     placeholder='Départ'
                     fetchDetails = {true}
+                    currentLocation={true}
+                    currentLocationLabel={"Ma position"}
+                    nearbyPlacesAPI='GooglePlacesSearch'
                     onPress={(data, details = null) => {
                         setDeparture({
+                            name: details.address_components[0].short_name +" "+ details.address_components[1].short_name,
                             latitude: details.geometry.location.lat,
                             longitude: details.geometry.location.lng,
                             latitudeDelta: 0.09,
@@ -162,6 +169,7 @@ const Search = ({navigation}) => {
                     fetchDetails = {true}
                     onPress={(data, details = null) => {
                         setArrival({
+                            name: details.address_components[0].short_name +" "+ details.address_components[1].short_name,
                             latitude: details.geometry.location.lat,
                             longitude: details.geometry.location.lng,
                             latitudeDelta: 0.09,
@@ -274,7 +282,7 @@ const Search = ({navigation}) => {
                     
                         <View style={styles.duration}>
                             <Text style={styles.duration_number}>
-                                {Math.round(item.duration/60)}
+                                {Math.round(item.duration)}
                             </Text>
                             <Text style={styles.duration_text}>
                                 min
