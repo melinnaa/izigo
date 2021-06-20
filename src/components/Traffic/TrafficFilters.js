@@ -179,10 +179,10 @@ const TrafficFilters= ({navigation}) => {
      */
     useEffect(() => {
         const timeout = setTimeout(showResults, 1000);
-        const timeout2 = setTimeout(showResultsStation, 1000);
+        //const timeout2 = setTimeout(showResultsStation, 1000);
         return () => {
             clearTimeout(timeout);
-            clearTimeout(timeout2);
+            //clearTimeout(timeout2);
         };
     }, [line, station]);
 
