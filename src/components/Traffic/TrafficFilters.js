@@ -9,13 +9,26 @@ const TrafficFilters= ({navigation}) => {
     const [station, setStation] = useState("");
     const [listResults, setListResults] = useState([]);
     const [listLines, setListLines] = useState([]);
+    const [listStation, setListStation] = useState([]);
     const [isShowingResults, setIsShowingResults] = useState(false);
 
     const formatLines = (item) => {
         return {
+            fromLon:item.routes[0].direction.stop_area.coord.lon,
+            fromLat:item.routes[0].direction.stop_area.coord.lat,
+            toLon:item.routes[1].direction.stop_area.coord.lon,
+            toLat:item.routes[1].direction.stop_area.coord.lat,
             name: item.name,
             id: item.id,
             code: item.code
+        }
+    }
+
+    const formatStations = (item) =>{
+        return{
+            label:item.label,
+            id:item.id,
+            name:item.name
         }
     }
 
@@ -37,12 +50,10 @@ const TrafficFilters= ({navigation}) => {
             
             transport.forEach((d) =>{
                 if(d.code==line){
-                    search = {id: d.id, name:d.name, code:d.code}
+                    search = {id: d.id, name:d.name, code:d.code, fromLon:d.fromLon,fromLat:d.fromLat,toLon:d.toLon,toLat:d.toLat}
                     setListLines([...listLines,search]);
                 }
             })
-
-
         })
 
         /*Promise.resolve(dataTram).then((response) => {
@@ -65,6 +76,27 @@ const TrafficFilters= ({navigation}) => {
             })
 
         })*/
+    }
+
+    const showResultsStation = () =>{
+        console.log("showing")
+        const data = fetchStopAreas();
+       
+        Promise.resolve(data).then((response) => {
+            //ça passe
+            const transport = new Array;
+            const lines = response.data.lines;
+            console.log(response.data.lines);
+            
+            for (var i = 0; i < lines.length; i++) {
+                transport.push(formatLines(lines[i]));
+            }
+            //console.log(lines);
+            transport.forEach((d) =>{
+                search = {id: d.id, name:d.name, code:d.code, physical_modes:d.physical_modes}
+                setListStation([...listStation,search]);
+            })
+        })
     }
    
     const fetchData = async () => {
@@ -97,17 +129,66 @@ const TrafficFilters= ({navigation}) => {
         }
     }
 
+    const fetchDataStation = async() =>{
+        try {
+            const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/stop_areas?", {
+                headers: {
+                    'Authorization': `7a9c06ed-e0b6-4bc3-a7da-f27d4cbee972`,
+                }
+            })
+            return resp
+
+        } catch (err) {
+            console.log(err.response);
+        }
+    }
+
+    const fetchStopAreas = async () =>{
+        console.log("showing")
+        const data = fetchDataStation();
+        Promise.resolve(data).then((response) => {
+            const transport = new Array;
+            const stop_areas = response.data.stop_areas;
+            
+            for (var i = 0; i < stop_areas.length; i++) {
+                transport.push(formatStations(stop_areas[i]));
+            }
+            
+            transport.forEach(async (d) =>{
+                
+                //if(d.label == station){
+                    try {
+                        const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/stop_areas/"+d.id+"/lines?", {
+                            headers: {
+                                'Authorization': `7a9c06ed-e0b6-4bc3-a7da-f27d4cbee972`,
+                            }
+                        })
+                        
+                        return resp
+            
+                    } catch (err) {
+                        console.log(err.response);
+                    }
+                //}
+            })
+        })
+    }
+
     /**
      * Wait to display the list of results
      */
     useEffect(() => {
         const timeout = setTimeout(showResults, 1000);
+        const timeout2 = setTimeout(showResultsStation, 1000);
         return () => {
             clearTimeout(timeout);
+            clearTimeout(timeout2);
         };
-    }, [line]);
+    }, [line, station]);
 
-    if (line == "") {
+    console.log(listStation);
+
+    if (line == ""){
         return (
             <View style={styles.container}>
                 <View style={styles.inputsBoxContainer}>
