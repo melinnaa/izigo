@@ -1,20 +1,34 @@
-import React from 'react'
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react'
+import { StyleSheet, Text, View, FlatList, StatusBar, TouchableOpacity } from 'react-native';
+import Ionicons from "react-native-vector-icons/Ionicons";
+import { createStackNavigator } from "@react-navigation/stack";
+import FavoriteList from '../components/Favorites/FavoriteList';
+import FavoriteDetails from '../components/Favorites/FavoriteDetails';
+
+const Stack = createStackNavigator();
 
 const FavoritePage = () => {
-    return (
-        <View style={styles.container}>
-            <Text>FavoritePage</Text>
-        </View>
+    return(
+        <Stack.Navigator
+            screenOptions={{
+                headerShown: false
+          }}
+          >
+            <Stack.Screen 
+                name="FavoriteList" 
+                component={FavoriteList} 
+                options={{title:'List'}}
+                initialParams={{ props: "no props" }}
+            />
+            <Stack.Screen 
+                name="FavoriteDetails" 
+                component={FavoriteDetails} 
+                options={{title:'Details'}}
+                initialParams={{ props: "no props" }}
+            />
+           
+        </Stack.Navigator>
     )
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        flexDirection: 'column',
-        margin: 1
-    },
-})
 
 export default FavoritePage;
