@@ -74,44 +74,6 @@ const Report = () => {
     );
 };
 
-/*import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableHighlight } from 'react-native';
-import Ionicons from "react-native-vector-icons/Ionicons";
-
-const Report = () => {
-    const [number, onChangeNumber] = useState(null);
-    return (
-        <View style={styles.container}>
-            <Ionicons name={'triangle'} size={100} color={"#FE596F"} style={styles.iconTriangle} />
-            <Ionicons name={'alert'} size={60} color={"white"} style={styles.iconAlert} />
-
-            <Text style={styles.title}>Signalement</Text>
-            <TextInput
-                style={styles.input}
-                value={tweetContent}
-          onChangeText={
-            (tweetContent) => setTweetContent(tweetContent)
-          }
-                placeholder="Qui de neuf sur la ligne ?"
-                keyboardType="numeric"
-            />
-            <TextInput
-                style={styles.inputHashtag}
-                onChangeText={onChangeNumber}
-                value={number}
-                placeholder="#RATP #ligne13"
-                keyboardType="numeric"
-            />
-
-            <TouchableHighlight
-                style={styles.submit}
-                onPress={() => navigation.navigate('Report')}>
-                <Text style={styles.submitText}>Tweeter</Text>
-            </TouchableHighlight>
-        </View>
-    )
-}*/
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
