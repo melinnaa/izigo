@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { Text, View, Dimensions, StyleSheet } from 'react-native';
+import { Text, View, Dimensions, StyleSheet, TouchableOpacity } from 'react-native';
 import MapView, { Marker, Polyline, Callout } from 'react-native-maps';
 import axios from 'axios';
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 
-const TrafficMap = ({ route }) => {
+const TrafficMap = ({ route, navigation }) => {
     const { props } = route.params;
+    //console.log(props.color);
 
     const [coords, setCoords] = useState([]);
     const [linePoints, setLinePoints] = useState([]);
     const [lineReports, setLineReports] = useState([]);
     const [disruptions, setDisruptions] = useState([]);
+    const [color] = useState("#"+ props.color)
 
     const formatLines = (item) => {
         return {
@@ -144,7 +146,7 @@ const TrafficMap = ({ route }) => {
             clearTimeout(timeout);
         };
     }, [coords]);
-   console.log(disruptions);
+   
     return (
         <View>
             <MapView
@@ -156,7 +158,7 @@ const TrafficMap = ({ route }) => {
                     latitudeDelta: 0.09,
                     longitudeDelta: 0.04
                 }}
-            >
+            >  
                 {
                     coords.map(({ latitude, longitude, name, departure_time, arrival_time }) =>
                         <Marker
@@ -174,11 +176,11 @@ const TrafficMap = ({ route }) => {
                                     </View>
                                     <View style={{ flexDirection: 'row' }}>
                                         <View style={styles.timeContainer}>
-                                            <Ionicons name="subway-outline" size={20} color="#70d8a2" />
+                                            <Ionicons name="subway-outline" size={20} color={color} />
                                             <Text style={styles.timeText}>D: {departure_time.substr(-6).substr(0, 2) + ":" + departure_time.substr(-6).substr(2, 2)}</Text>
                                         </View>
                                         <View style={styles.timeContainer}>
-                                            <Ionicons name="subway-outline" size={20} color="#70d8a2" />
+                                            <Ionicons name="subway-outline" size={20} color={color} />
                                             <Text style={styles.timeText}>A: {arrival_time.substr(-6).substr(0, 2) + ":" + arrival_time.substr(-6).substr(2, 2)}</Text>
                                         </View>
                                     </View>
@@ -198,7 +200,7 @@ const TrafficMap = ({ route }) => {
                 }
                 <Polyline
                     coordinates={linePoints}
-                    strokeColor="#000000" // fallback for when `strokeColors` is not supported by the map-provider
+                    strokeColor={color} // fallback for when `strokeColors` is not supported by the map-provider
                     strokeWidth={4}
                 />
             </MapView>
@@ -243,6 +245,12 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontFamily: 'NunitoBold'
     },
+    goBack:{
+        paddingVertical:10, 
+        paddingHorizontal:15,
+        backgroundColor:"white",
+        opacity:0.4
+    }
 })
 
 export default TrafficMap;

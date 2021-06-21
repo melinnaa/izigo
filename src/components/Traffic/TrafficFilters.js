@@ -11,6 +11,7 @@ const TrafficFilters = ({ navigation }) => {
     const [listLines, setListLines] = useState([]);
     const [listTram, setListTram] = useState([]);
     const [listStation, setListStation] = useState([]);
+    const [listStopAreas,setListStopAreas] = useState([]);
 
     const formatLines = (item) => {
         return {
@@ -20,7 +21,8 @@ const TrafficFilters = ({ navigation }) => {
             toLat: item.routes[1].direction.stop_area.coord.lat,
             name: item.name,
             id: item.id,
-            code: item.code
+            code: item.code,
+            color: item.color
         }
     }
 
@@ -56,7 +58,7 @@ const TrafficFilters = ({ navigation }) => {
 
             transport.forEach((d) => {
                 if (d.code == line) {
-                    search = { id: d.id, name: d.name, code: d.code, fromLon: d.fromLon, fromLat: d.fromLat, toLon: d.toLon, toLat: d.toLat }
+                    search = { id: d.id, name: d.name, code: d.code, fromLon: d.fromLon, fromLat: d.fromLat, toLon: d.toLon, toLat: d.toLat, color: d.color }
                     setListLines([...listLines, search]);
                     setListResults([...listResults,search]);
                 }
@@ -110,18 +112,16 @@ const TrafficFilters = ({ navigation }) => {
     const showResultsStation = () => {
         console.log("showing")
         const data = fetchStopAreas();
-
         Promise.resolve(data).then((response) => {
             //ça passe
             const transport = new Array;
             const lines = response.data.lines;
-            
+            console.log(response.data.lines);
 
             for (var i = 0; i < lines.length; i++) {
                 transport.push(formatLines(lines[i]));
             }
             transport.forEach((d) => {
-                console.log(d);
                 var search = { id: d.id, name: d.name, code: d.code, physical_modes: d.physical_modes }
                 setListStation([...listStation, search]);
             })
@@ -196,9 +196,10 @@ const TrafficFilters = ({ navigation }) => {
             for (var i = 0; i < stop_areas.length; i++) {
                 transport.push(formatStations(stop_areas[i]));
             }
-
+            
             transport.forEach(async (d) => {
-                try {
+                setListStopAreas([...listStopAreas,{id:d.id, name:d.name}]);
+                /*try {
                     const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/stop_areas/" + d.id + "/lines?", {
                         headers: {
                             'Authorization': `7a9c06ed-e0b6-4bc3-a7da-f27d4cbee972`,
@@ -209,9 +210,26 @@ const TrafficFilters = ({ navigation }) => {
 
                 } catch (err) {
                     console.log(err.response);
-                }
+                }*/
             })
         })
+    }
+
+    const fetchLinesForStation = async () =>{
+        for(let i=0;i<listStopAreas.length;i++){
+            try {
+                const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/stop_areas/" + listStopAreas[i].id + "/lines?", {
+                    headers: {
+                        'Authorization': `7a9c06ed-e0b6-4bc3-a7da-f27d4cbee972`,
+                    }
+                })
+
+                return resp
+
+            } catch (err) {
+                console.log(err.response);
+            }
+        }
     }
 
     /**
@@ -221,15 +239,17 @@ const TrafficFilters = ({ navigation }) => {
         const timeout = setTimeout(showResults, 1000);
         showResultsTram();
         showResultsRER();
-        //showResultsStation();
-        //const timeout2 = setTimeout(showResultsStation, 1000);
+        fetchStopAreas();
+        fetchLinesForStation();
+        
+        const timeout2 = setTimeout(showResultsStation, 1000);
         return () => {
             clearTimeout(timeout);
-            //clearTimeout(timeout2);
+            clearTimeout(timeout2);
         };
     }, [line, station]);
 
-    console.log(listResults);
+    console.log(listStopAreas);
 
     if (line == "") {
         return (
