@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Text, View, Dimensions, StyleSheet, TouchableOpacity } from 'react-native';
+import { Text, View, Dimensions, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import MapView, { Marker, Polyline, Callout } from 'react-native-maps';
 import axios from 'axios';
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -7,13 +7,14 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 
 const TrafficMap = ({ route, navigation }) => {
     const { props } = route.params;
-    //console.log(props.color);
 
+    const [line, setLine] = useState(route.params.line);
+    const [station, setStation] = useState("");
     const [coords, setCoords] = useState([]);
     const [linePoints, setLinePoints] = useState([]);
     const [lineReports, setLineReports] = useState([]);
     const [disruptions, setDisruptions] = useState([]);
-    const [color] = useState("#"+ props.color)
+    const [color] = useState("#" + props.color);
 
     const formatLines = (item) => {
         return {
@@ -27,10 +28,10 @@ const TrafficMap = ({ route, navigation }) => {
         }
     }
 
-    const formatLineReports = (item) =>{
-        return{
-            pt_objects:item.pt_objects,
-            id:item.line.id
+    const formatLineReports = (item) => {
+        return {
+            pt_objects: item.pt_objects,
+            id: item.line.id
         }
     }
 
@@ -87,27 +88,27 @@ const TrafficMap = ({ route, navigation }) => {
 
     //Voir comment transformer dates pour avoir temps d'arrivee
 
-    const showDisruptions = () =>{
+    const showDisruptions = () => {
         console.log("showing");
         const data = fetchLineReports();
         Promise.resolve(data).then((response) => {
             const line = new Array;
             const report = response.data.line_reports;
-            
-            
+
+
             for (var i = 0; i < report.length; i++) {
                 line.push(formatLineReports(report[i]));
             }
-            
+
             var disruption = [];
-            
+
             line.forEach((d) => {
-                
-                for(let i=0;i<d.pt_objects.length;i++){
-                    var rep = {report:d.pt_objects[i].stop_area.name}
-                    disruption = [...disruption,rep]
+
+                for (let i = 0; i < d.pt_objects.length; i++) {
+                    var rep = { report: d.pt_objects[i].stop_area.name }
+                    disruption = [...disruption, rep]
                 }
-                
+
             })
             setLineReports(disruption);
         })
@@ -122,15 +123,15 @@ const TrafficMap = ({ route, navigation }) => {
         setLinePoints(latLong);
     }
 
-    const takeReports = () =>{
+    const takeReports = () => {
         var pert = [];
-        coords.map(({name}) => {
-            lineReports.map(({report}) => {
-                if(name==report){
-                    pert = [...pert,{pert:'1 perturbation'}]
+        coords.map(({ name }) => {
+            lineReports.map(({ report }) => {
+                if (name == report) {
+                    pert = [...pert, { pert: '1 perturbation' }]
                 }
-                else{
-                    pert = [...pert, {pert:'0 perturbation'}];
+                else {
+                    pert = [...pert, { pert: '0 perturbation' }];
                 }
             })
         })
@@ -146,9 +147,39 @@ const TrafficMap = ({ route, navigation }) => {
             clearTimeout(timeout);
         };
     }, [coords]);
-   
+
     return (
-        <View>
+        <View style={styles.container}>
+            <View style={styles.inputsBoxContainer}>
+                <TouchableOpacity onPress={()=> navigation.goBack()}>
+                    <Ionicons name="arrow-back-outline" size={25} color="white" />
+                </TouchableOpacity>
+                <Text style={styles.title}>Voir le traffic</Text>
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        style={styles.input}
+                        value={line}
+                        onChangeText={setLine}
+                        placeholder="Ligne"
+                        underlineColorAndroid="transparent"
+                    />
+                    <View style={styles.icon}>
+                        <Ionicons name="search-outline" size={15} color="#959595" />
+                    </View>
+                </View>
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        style={styles.input}
+                        value={station}
+                        onChangeText={setStation}
+                        placeholder="Nom de la station"
+                        underlineColorAndroid="transparent"
+                    />
+                    <View style={styles.icon}>
+                        <Ionicons name="search-outline" size={15} color="#959595" />
+                    </View>
+                </View>
+            </View>
             <MapView
                 style={styles.map}
                 provider={MapView.PROVIDER_GOOGLE}
@@ -158,7 +189,7 @@ const TrafficMap = ({ route, navigation }) => {
                     latitudeDelta: 0.09,
                     longitudeDelta: 0.04
                 }}
-            >  
+            >
                 {
                     coords.map(({ latitude, longitude, name, departure_time, arrival_time }) =>
                         <Marker
@@ -185,14 +216,14 @@ const TrafficMap = ({ route, navigation }) => {
                                         </View>
                                     </View>
                                     <View style={styles.reportsContainer}>
-                                    {
-                                        disruptions.map(({pert}) => {
-                                            <Text style={styles.reportsText}>{pert}</Text>
-                                        })
-                                        
-                                    }
+                                        {
+                                            disruptions.map(({ pert }) => {
+                                                <Text style={styles.reportsText}>{pert}</Text>
+                                            })
+
+                                        }
                                     </View>
-                                    
+
                                 </View>
                             </Callout>
                         </Marker>
@@ -209,6 +240,53 @@ const TrafficMap = ({ route, navigation }) => {
 }
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        //flexDirection: 'column',
+        margin: 1
+    },
+    inputsBoxContainer: {
+        paddingHorizontal: 10,
+        paddingVertical: 30,
+        backgroundColor: "#FE596F",
+        borderRadius: 10
+    },
+    title: {
+        color: "#ffffff",
+        fontSize: 18,
+        //fontFamily:"Nunito",
+        //fontWeight:"bold",
+        textAlign: "center",
+        padding: 5
+    },
+    inputContainer: {
+        flex: 1,
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center",
+        margin: 35
+    },
+    input: {
+        flex: 1,
+        borderRadius: 30,
+        paddingTop: 10,
+        paddingBottom: 10,
+        paddingLeft: 20,
+        paddingRight: 0,
+        width: 370,
+        height: 50,
+        backgroundColor: "white",
+        color: "#000000",
+        display: "flex",
+        alignItems: "center",
+        position: "absolute",
+        fontFamily: "NunitoBold"
+    },
+    icon: {
+        position: 'absolute',
+        display: "flex",
+        right: 5
+    },
     map: {
         width: Dimensions.get('window').width,
         height: Dimensions.get('window').height,
@@ -245,11 +323,11 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontFamily: 'NunitoBold'
     },
-    goBack:{
-        paddingVertical:10, 
-        paddingHorizontal:15,
-        backgroundColor:"white",
-        opacity:0.4
+    goBack: {
+        paddingVertical: 10,
+        paddingHorizontal: 15,
+        backgroundColor: "white",
+        opacity: 0.4
     }
 })
 

@@ -12,6 +12,8 @@ const TrafficFilters = ({ navigation }) => {
     const [listTram, setListTram] = useState([]);
     const [listStation, setListStation] = useState([]);
     const [listStopAreas,setListStopAreas] = useState([]);
+    const [selectedId,setSelectedId] = useState(null);
+    const [isFetching, setIsFetching] = useState(false);
 
     const formatLines = (item) => {
         return {
@@ -79,8 +81,7 @@ const TrafficFilters = ({ navigation }) => {
 
             transport.forEach((d) => {
                 if (d.code==line) {
-                    var search = { id: d.id, name: d.name, code: d.code, fromLon: d.fromLon, fromLat: d.fromLat, toLon: d.toLon, toLat: d.toLat }
-                    //setListTram([...listTram, search]);
+                    var search = { id: d.id, name: d.name, code: d.code, fromLon: d.fromLon, fromLat: d.fromLat, toLon: d.toLon, toLat: d.toLat, color:d.color }
                     setListResults([...listResults,search]);
                 }
             })
@@ -111,12 +112,11 @@ const TrafficFilters = ({ navigation }) => {
 
     const showResultsStation = () => {
         console.log("showing")
-        const data = fetchStopAreas();
+        const data = fetchLinesForStation();
         Promise.resolve(data).then((response) => {
             //ça passe
             const transport = new Array;
             const lines = response.data.lines;
-            console.log(response.data.lines);
 
             for (var i = 0; i < lines.length; i++) {
                 transport.push(formatLines(lines[i]));
@@ -199,18 +199,6 @@ const TrafficFilters = ({ navigation }) => {
             
             transport.forEach(async (d) => {
                 setListStopAreas([...listStopAreas,{id:d.id, name:d.name}]);
-                /*try {
-                    const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/stop_areas/" + d.id + "/lines?", {
-                        headers: {
-                            'Authorization': `7a9c06ed-e0b6-4bc3-a7da-f27d4cbee972`,
-                        }
-                    })
-
-                    return resp
-
-                } catch (err) {
-                    console.log(err.response);
-                }*/
             })
         })
     }
@@ -232,6 +220,14 @@ const TrafficFilters = ({ navigation }) => {
         }
     }
 
+    const onRefresh = () =>{
+        setIsFetching(true);
+        showResults();
+        showResultsTram();
+        showResultsRER();
+        fetchStopAreas();
+    }
+
     /**
      * Wait to display the list of results
      */
@@ -249,7 +245,7 @@ const TrafficFilters = ({ navigation }) => {
         };
     }, [line, station]);
 
-    console.log(listStopAreas);
+    console.log(listResults);
 
     if (line == "") {
         return (
@@ -281,7 +277,6 @@ const TrafficFilters = ({ navigation }) => {
                         </View>
                     </View>
                 </View>
-
                 <View>
                     <MapView
                         style={styles.map}
@@ -332,12 +327,17 @@ const TrafficFilters = ({ navigation }) => {
                     <FlatList
                         data={listResults}
                         renderItem={({ item }) => (
-                            <TouchableOpacity style={styles.itemContainer} onPress={() => navigation.navigate("TrafficMap", { props: item })}>
-                                <Text style={styles.items}>{item.code}</Text>
-                                <Text style={[styles.items, { paddingLeft: 5 }]}>{item.name}</Text>
+                            <TouchableOpacity style={styles.itemContainer} onPress={() => navigation.navigate("TrafficMap", { props: item, line: line })}>
+                                <TouchableOpacity style={{backgroundColor:"#"+item.color, paddingHorizontal:5, borderRadius:80 }}>
+                                    <Text style={styles.items}>{item.code}</Text>
+                                </TouchableOpacity>
+                                <Text style={styles.itemName}>{item.name}</Text>
                             </TouchableOpacity>
                         )}
                         keyExtractor={(item) => item.id}
+                        onRefresh={onRefresh}
+                        refreshing={isFetching}
+                        ListEmptyComponent={()=> <Text>Recherche introuvable</Text>}
                     />
                 </SafeAreaView>
                 <View style={{ margin: 20, padding: 30 }}></View>
@@ -411,7 +411,15 @@ const styles = StyleSheet.create({
     items: {
         color: "black",
         fontSize: 14,
-        fontFamily: 'NunitoBold'
+        fontFamily: 'NunitoBold',
+    },
+    itemName:{
+        color: "black",
+        fontSize: 14,
+        fontFamily: 'NunitoBold',
+        alignItems:'center',
+        justifyContent:'center',
+        paddingLeft:5
     }
 })
 
