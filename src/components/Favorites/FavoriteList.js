@@ -5,6 +5,9 @@ import * as firebase from "firebase";
 import "firebase/auth";
 
 const FavoriteList = ({ navigation }) => {
+    let userID = firebase.auth().currentUser.email
+    var nameUser   = userID.substring(0, userID.lastIndexOf("@"));
+
     const user = firebase.auth().currentUser;
 
     const [myData, setMyData] = useState([])
@@ -12,7 +15,7 @@ const FavoriteList = ({ navigation }) => {
     const db = firebase.firestore();
 
     if (user) {
-        db.collection("Course")
+        db.collection("Courses")
             .get()
             .then((querySnapshot) => {
                 let d = querySnapshot.docs.map((doc) => {
@@ -33,11 +36,11 @@ const FavoriteList = ({ navigation }) => {
             await firebase.auth().signOut();
             const user = firebase.auth().currentUser;
             console.log(user)
-            alert("Vous êtes bien déconnecter !");
-        } catch (e) {
-            alert("Erreur")
-        }
-        navigation.navigate('Login');
+                alert("Vous êtes bien déconnecter !");
+          } catch (e){
+                alert("Erreur")
+          } 
+          navigation.navigate('Login');
 
     }
     /*
@@ -52,7 +55,7 @@ const FavoriteList = ({ navigation }) => {
     return (
         <View style={styles.container}>
             <Text style={styles.bonjourText}>Bonjour</Text>
-            <Text style={styles.nameText}>Ana, </Text>
+            <Text style={styles.nameText}>{nameUser}</Text>
             <TouchableOpacity
                 activeOpacity={0.7}
                 style={styles.signOutButton}
