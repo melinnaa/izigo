@@ -12,22 +12,14 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": ["**/*"],
-    "expo": {
-      "facebookAppId": "155973796466454", 
-      "facebookDisplayName": "izigo-82ed2"
-    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.izigo.2021",
-      "config": {
-        "gooleSignIn": {
-          "reservedClientId": "com.googleusercontent.apps.878029325287-r8csg4nihuq3nhalvtrc6778krvhaogc"
-        }
-      },
-      "googleServicesFile": "./GoogleService-Info.plist"
     },
-    "android": {},
+    "android": {
+    },
     "web": {
       "favicon": "./src/assets/favicon.png"
     }

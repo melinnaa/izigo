@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>878029325287-hb0gfiu4ghvkera67fs4vj4mu8i6j48n.apps.googleusercontent.com</string>
+	<string>878029325287-r8csg4nihuq3nhalvtrc6778krvhaogc.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.878029325287-hb0gfiu4ghvkera67fs4vj4mu8i6j48n</string>
+	<string>com.googleusercontent.apps.878029325287-r8csg4nihuq3nhalvtrc6778krvhaogc</string>
 	<key>API_KEY</key>
 	<string>AIzaSyCOoMJhpRJWRJSkNq3UojCoVeDLbZtuTrw</string>
 	<key>GCM_SENDER_ID</key>
@@ -13,7 +13,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.izigo.2021</string>
+	<string>izigo-82ed2</string>
 	<key>PROJECT_ID</key>
 	<string>izigo-82ed2</string>
 	<key>STORAGE_BUCKET</key>
@@ -29,6 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:878029325287:ios:dcfa0c0c4f11c8d15a3342</string>
+	<string>1:878029325287:ios:ceeb3eeab3c7bdad5a3342</string>
 </dict>
 </plist>
