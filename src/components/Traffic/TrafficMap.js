@@ -140,8 +140,8 @@ const TrafficMap = ({ route, navigation }) => {
 
     useEffect(() => {
         const timeout = setTimeout(showResults, 1000);
-        showDisruptions();
-        takeReports();
+        //showDisruptions();
+        //takeReports();
         createPolyline();
         return () => {
             clearTimeout(timeout);
@@ -216,12 +216,7 @@ const TrafficMap = ({ route, navigation }) => {
                                         </View>
                                     </View>
                                     <View style={styles.reportsContainer}>
-                                        {
-                                            disruptions.map(({ pert }) => {
-                                                <Text style={styles.reportsText}>{pert}</Text>
-                                            })
-
-                                        }
+                                       <Text style={styles.reportsText}>perturbation(s)</Text>
                                     </View>
 
                                 </View>

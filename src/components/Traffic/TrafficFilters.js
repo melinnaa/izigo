@@ -14,6 +14,7 @@ const TrafficFilters = ({ navigation }) => {
     const [listStopAreas,setListStopAreas] = useState([]);
     const [selectedId,setSelectedId] = useState(null);
     const [isFetching, setIsFetching] = useState(false);
+    const [currentPosition, setCurrentPosition] = useState([]);
 
     const formatLines = (item) => {
         return {
@@ -44,6 +45,13 @@ const TrafficFilters = ({ navigation }) => {
             id: item.id,
             name: item.name
         }
+    }
+    const formatPosition = (item) =>{
+        return{
+            latitude:item.stop_point.coord.lat,
+            longitude:item.stop_point.coord.lon,
+        }
+        
     }
 
     const showResults = () => {
@@ -127,6 +135,22 @@ const TrafficFilters = ({ navigation }) => {
             })
         })
         
+    }
+
+    const showPosition = () =>{
+        console.log("showing")
+        const data = fetchPosition();
+        Promise.resolve(data).then((response) => {
+            const position = new Array;
+            const pos = response.data.arrivals;
+
+            for (var i = 0; i < pos.length; i++) {
+                position.push(formatPosition(pos[i]));
+            }
+            position.forEach((d) => {
+                setCurrentPosition([...currentPosition,{latitude:d.stop_point.coord.lat,longitude:d.stop_point.coord.lon}])
+            })
+        })
     }
 
     const fetchData = async () => {
@@ -220,6 +244,21 @@ const TrafficFilters = ({ navigation }) => {
         }
     }
 
+    const fetchPosition = async() => {
+        try {
+            const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/lines/"+listResults[listResults.length-1].id+"/arrivals?data_freshness=realtime&count=1&", {
+                headers: {
+                    'Authorization': `7a9c06ed-e0b6-4bc3-a7da-f27d4cbee972`,
+                }
+            })
+
+            return resp
+
+        } catch (err) {
+            console.log(err.response);
+        }
+    }
+
     const onRefresh = () =>{
         setIsFetching(true);
         showResults();
@@ -237,6 +276,7 @@ const TrafficFilters = ({ navigation }) => {
         showResultsRER();
         fetchStopAreas();
         fetchLinesForStation();
+        showPosition();
         
         const timeout2 = setTimeout(showResultsStation, 1000);
         return () => {
@@ -245,7 +285,7 @@ const TrafficFilters = ({ navigation }) => {
         };
     }, [line, station]);
 
-    console.log(listResults);
+    console.log(currentPosition);
 
     if (line == "") {
         return (
