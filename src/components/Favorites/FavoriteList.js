@@ -2,33 +2,64 @@ import React, { useState, useEffect } from 'react'
 import { StyleSheet, Text, View, FlatList, StatusBar, TouchableOpacity } from 'react-native';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import * as firebase from "firebase";
+import "firebase/auth";
 
 const FavoriteList = ({ navigation }) => {
+    const user = firebase.auth().currentUser;
 
     const [myData, setMyData] = useState([])
 
     const db = firebase.firestore();
 
-    db.collection("Course")
-        .get()
-        .then((querySnapshot) => {
-            let d = querySnapshot.docs.map((doc) => {
-                const id = doc.id;
-                const donnees = doc.data();
-
-                return { id, ...donnees };
+    if (user) {
+        db.collection("Course")
+            .get()
+            .then((querySnapshot) => {
+                let d = querySnapshot.docs.map((doc) => {
+                    console.log(querySnapshot)
+                });
+                setMyData(d);
+            })
+            .catch((error) => {
+                console.log("Error getting documents: ", error);
             });
-            setMyData(d);
-        })
-        .catch((error) => {
-            console.log("Error getting documents: ", error);
-        });
+    }
+    else {
+        navigation.navigate('Login');
+    }
 
+    const signOut = async () => {
+        try {
+            await firebase.auth().signOut();
+            const user = firebase.auth().currentUser;
+            console.log(user)
+            alert("Vous êtes bien déconnecter !");
+        } catch (e) {
+            alert("Erreur")
+        }
+        navigation.navigate('Login');
 
+    }
+    /*
+    firebase.auth().onAuthStateChanged(user => {
+        if (user){
+            console.log('user is logged in ' , user)
+        }
+        else{
+            console.log('user is logged out ')
+        }
+    })*/
     return (
         <View style={styles.container}>
             <Text style={styles.bonjourText}>Bonjour</Text>
-            <Text style={styles.nameText}>Ana,</Text>
+            <Text style={styles.nameText}>Ana, </Text>
+            <TouchableOpacity
+                activeOpacity={0.7}
+                style={styles.signOutButton}
+                onPress={() => signOut()}
+            >
+                <Text style={styles.submitText}>Se déconnecter</Text>
+            </TouchableOpacity>
             <View style={styles.favorisContainer}>
                 <Text style={styles.favorisText}>Mes Favoris</Text>
                 <Ionicons name="heart" size={35} color="#FE596F" />
@@ -64,7 +95,7 @@ const styles = StyleSheet.create({
         fontFamily: "NunitoLight",
         fontSize: 36,
         //fontWeight:"normal",
-        paddingTop: 30,
+        paddingTop: "15%",
         paddingLeft: 20
     },
     nameText: {
@@ -103,6 +134,12 @@ const styles = StyleSheet.create({
         fontFamily: "NunitoBold",
         alignSelf: "center",
         paddingLeft: 10
+    },
+    signOutButton: {
+        top: "-13%",
+        left: "70%",
+        color: "#A0A0A0",
+        textAlign: "center"
     }
 })
 
