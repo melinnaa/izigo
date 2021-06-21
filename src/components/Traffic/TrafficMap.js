@@ -11,6 +11,7 @@ const TrafficMap = ({ route }) => {
     const [coords, setCoords] = useState([]);
     const [linePoints, setLinePoints] = useState([]);
     const [lineReports, setLineReports] = useState([]);
+    const [disruptions, setDisruptions] = useState([]);
 
     const formatLines = (item) => {
         return {
@@ -24,7 +25,12 @@ const TrafficMap = ({ route }) => {
         }
     }
 
-    //const formatLineReports = (item) =>{}
+    const formatLineReports = (item) =>{
+        return{
+            pt_objects:item.pt_objects,
+            id:item.line.id
+        }
+    }
 
     const fetchData = async () => {
         try {
@@ -68,7 +74,7 @@ const TrafficMap = ({ route }) => {
             var coordinates = [];
             line.forEach((d) => {
                 for (i = 0; i < d.stop_date_times.length; i++) {
-                    var coord = { latitude: parseFloat(d.stop_date_times[i].stop_point.coord.lat), longitude: parseFloat(d.stop_date_times[i].stop_point.coord.lon), name: d.stop_date_times[i].stop_point.name, departure_time: d.stop_date_times[i].departure_date_time, arrival_time: d.stop_date_times[i].arrival_date_time, color:d.display_informations.color }
+                    var coord = { latitude: parseFloat(d.stop_date_times[i].stop_point.coord.lat), longitude: parseFloat(d.stop_date_times[i].stop_point.coord.lon), name: d.stop_date_times[i].stop_point.name, departure_time: d.stop_date_times[i].departure_date_time, arrival_time: d.stop_date_times[i].arrival_date_time }
                     coordinates = [...coordinates, coord];
                 }
             })
@@ -79,46 +85,29 @@ const TrafficMap = ({ route }) => {
 
     //Voir comment transformer dates pour avoir temps d'arrivee
 
-    const showReports = () => {
-        console.log("showing")
-        const journey = fetchData();
+    const showDisruptions = () =>{
+        console.log("showing");
         const data = fetchLineReports();
-        Promise.resolve(journey).then((response) => {
-            Promise.resolve(data).then((response2) => {
-                const line = new Array;
-                const report = new Array;
-                const line_stop_areas = response.data.journeys;
-                const line_reports = response2.data.line_reports;
-                
-                
-                for (var i = 0; i < line_stop_areas.length; i++) {
-                    line.push(formatLines(line_stop_areas[i]));
-                }
-
-                for (var i = 0; i < line_reports.length; i++) {
-                    report.push(formatLines(line_reports[i]));
-                }
-
-                
-                line.forEach((d) => {
-                    report.forEach((rep) => {
-                        console.log(rep);
-                        for (i = 0; i < d.stop_date_times.length; i++) {
-                            if(d.stop_date_times[i].stop_point.name== rep.pt_objects.name){
-                                var disruption = '1 perturbation(s)';
-                                setLineReports([...lineReports,disruption])
-                            }
-                            else{
-                                disruption = '0 perturbation(s)';
-                                setLineReports([...lineReports,disruption])
-                            }
-                        }
-                    })
-                    
-                })
-    
-            })
+        Promise.resolve(data).then((response) => {
+            const line = new Array;
+            const report = response.data.line_reports;
             
+            
+            for (var i = 0; i < report.length; i++) {
+                line.push(formatLineReports(report[i]));
+            }
+            
+            var disruption = [];
+            
+            line.forEach((d) => {
+                
+                for(let i=0;i<d.pt_objects.length;i++){
+                    var rep = {report:d.pt_objects[i].stop_area.name}
+                    disruption = [...disruption,rep]
+                }
+                
+            })
+            setLineReports(disruption);
         })
     }
 
@@ -131,17 +120,31 @@ const TrafficMap = ({ route }) => {
         setLinePoints(latLong);
     }
 
+    const takeReports = () =>{
+        var pert = [];
+        coords.map(({name}) => {
+            lineReports.map(({report}) => {
+                if(name==report){
+                    pert = [...pert,{pert:'1 perturbation'}]
+                }
+                else{
+                    pert = [...pert, {pert:'0 perturbation'}];
+                }
+            })
+        })
+        setDisruptions(pert);
+    }
+
     useEffect(() => {
         const timeout = setTimeout(showResults, 1000);
-        showReports();
-        //const timeout2 = setTimeout(showReports,1000);
+        showDisruptions();
+        takeReports();
         createPolyline();
         return () => {
             clearTimeout(timeout);
-            //clearTimeout(timeout2);
         };
     }, [coords]);
-
+   console.log(disruptions);
     return (
         <View>
             <MapView
@@ -155,7 +158,7 @@ const TrafficMap = ({ route }) => {
                 }}
             >
                 {
-                    coords.map(({ latitude, longitude, name, departure_time, arrival_time,color }) =>
+                    coords.map(({ latitude, longitude, name, departure_time, arrival_time }) =>
                         <Marker
                             coordinate={{
                                 latitude: latitude,
@@ -175,13 +178,19 @@ const TrafficMap = ({ route }) => {
                                             <Text style={styles.timeText}>D: {departure_time.substr(-6).substr(0, 2) + ":" + departure_time.substr(-6).substr(2, 2)}</Text>
                                         </View>
                                         <View style={styles.timeContainer}>
-                                            <Ionicons name="subway-outline" size={20} color={color} />
+                                            <Ionicons name="subway-outline" size={20} color="#70d8a2" />
                                             <Text style={styles.timeText}>A: {arrival_time.substr(-6).substr(0, 2) + ":" + arrival_time.substr(-6).substr(2, 2)}</Text>
                                         </View>
                                     </View>
                                     <View style={styles.reportsContainer}>
-                                        <Text style={styles.reportsText}>3 perturbations</Text>
+                                    {
+                                        disruptions.map(({pert}) => {
+                                            <Text style={styles.reportsText}>{pert}</Text>
+                                        })
+                                        
+                                    }
                                     </View>
+                                    
                                 </View>
                             </Callout>
                         </Marker>
@@ -233,7 +242,7 @@ const styles = StyleSheet.create({
     reportsText: {
         fontSize: 16,
         fontFamily: 'NunitoBold'
-    }
+    },
 })
 
 export default TrafficMap;

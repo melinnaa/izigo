@@ -121,7 +121,6 @@ const TrafficFilters= ({navigation}) => {
                     'Authorization': `7a9c06ed-e0b6-4bc3-a7da-f27d4cbee972`,
                 }
             })
-            //console.log(resp);
             return resp
 
         } catch (err) {
