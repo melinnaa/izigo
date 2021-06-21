@@ -2,36 +2,111 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity, Alert } from 'react-native';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import firebase from '../../Firebase/firebase';
-import * as GoogleSignIn from 'expo-google-sign-in';
+import * as Facebook from 'expo-facebook';
+import * as Google from 'expo-google-app-auth';
+import * as AppleAuthentication from 'expo-apple-authentication';
 
 const Login = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
+    async function onFacebookButtonPress() {
+        try {
+            await Facebook.initializeAsync({
+                appId: '155973796466454',
+            });
+            const {
+                type,
+                token,
+            } = await Facebook.logInWithReadPermissionsAsync({
+                permissions: ['public_profile'],
+            });
+            if (type === 'success') {
+                // Get the user's name using Facebook's Graph API
+                const response = await fetch(`https://graph.facebook.com/me?access_token=${token}`);
+                Alert.alert('Connecté!', `Bonjour ${(await response.json()).name}!`);
+
+                return navigation.navigate('FavoritePage');
+            } else {
+                return navigation.navigate('Login');
+            }
+        } catch ({ message }) {
+            alert(`Facebook Login Error: ${message}`);
+        }
+
+    }
+
+    const onGoogleButtonPress = async () => {
+        try {
+            const result = await Google.logInAsync({
+                //androidClientId: YOUR_CLIENT_ID_HERE,
+                iosClientId: '811011509063-chv7m4gvfug5c6vav58d6kktiobg5udg.apps.googleusercontent.com',
+                scopes: ['profile', 'email'],
+            });
+
+            if (result.type === 'success') {
+                return navigation.navigate('FavoritePage');
+
+            } else {
+                return navigation.navigate('Login');
+            }
+        } catch (e) {
+            return { error: true };
+        }
+    };
+
+    const onAppleButtonPress = async () => {
+        try {
+            const credential = await AppleAuthentication.signInAsync({
+                requestedScopes: [
+                    AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+                    AppleAuthentication.AppleAuthenticationScope.EMAIL,
+                ],
+            });
+            return navigation.navigate('FavoritePage');
+        } catch (e) {
+            if (e.code === 'ERR_CANCELED') {
+                return navigation.navigate('Login');
+            } else {
+                // handle other errors
+            }
+        }
+    }
     const signIn = async () => {
-        await firebase.auth().signInWithEmailAndPassword(email, password).catch(err => {
+        try {
+            const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+            console.log(userCredential);
+
+            return navigation.navigate('FavoritePage');
+        }
+        catch (err) {
             switch (err.code) {
                 case 'auth/invalid-email':
                     return Alert.alert('Saisissez un e-mail valide');
                     break;
-                default:
-                    Alert.alert("Veuillez remplir les champs");
+                case 'auth/user-not-found':
+                    return Alert.alert('Impossible de trouver un compte IziGo associé à cet e-mail. Veuillez recommencer.');
+                    break;
+                case 'auth/wrong-password':
+                    return Alert.alert('Le mot de passe est incorrect. Réessayez ou identifiez-vous avec les réseaux sociaux.');
+                    break;
+                case 'auth/invalid-uid':
+                    return Alert.alert('Un compte epas existe');
+                    break;
             }
-            return navigation.navigate('FavoritePage');
+            console.log(err.code);
+            return navigation.navigate('Login');
+        }
+    }
+
+    useEffect(() => {
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user != null) {
+                console.log(user)
+            }
         })
-    }
-
-    const initAsync = async () => {
-        try {
-            await GoogleSignIn.initAsync({
-                clientId: '509557147546-k10u0ef4hii58adpus1mp112eulqhigp.apps.googleusercontent.com',
-            });
-        } catch ({ message }) {
-            alert('GoogleSignIn.initAsync(): ' + message);
-        };
-    }
-
+    }, []);
 
     return (
         <View style={styles.container}>
@@ -41,7 +116,7 @@ const Login = ({ navigation }) => {
             />
             <Text style={styles.title}>Se connecter</Text>
             <TextInput
-                placeholder={'Email, nom d\'utilisateur'}
+                placeholder={'Adresse e-mail'}
                 onChangeText={setEmail}
                 style={styles.inputName}
                 keyboardType="email-address"
@@ -85,7 +160,7 @@ const Login = ({ navigation }) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.icon}
-                    onPress={initAsync} >
+                    onPress={() => onGoogleButtonPress()}>
                     <Ionicons name={"logo-google"} size={40} />
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -98,7 +173,7 @@ const Login = ({ navigation }) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.icon}
-                    onPress={() => onAppleButtonPress().then(() => console.log('Apple sign-in complete!'))}>
+                    onPress={() => onAppleButtonPress()}>
                     <Ionicons name={"logo-apple"} size={40} />
                 </TouchableOpacity>
             </View>
