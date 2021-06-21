@@ -67,6 +67,16 @@ const FavoriteList = ({ navigation }) => {
 
     }
 
+    }
+    /*
+    firebase.auth().onAuthStateChanged(user => {
+        if (user){
+            console.log('user is logged in ' , user)
+        }
+        else{
+            console.log('user is logged out ')
+        }
+    })*/
     return (
         <View style={styles.container}>
             <Text style={styles.bonjourText}>Bonjour</Text>
