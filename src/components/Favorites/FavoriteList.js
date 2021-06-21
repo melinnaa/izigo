@@ -5,6 +5,9 @@ import * as firebase from "firebase";
 import "firebase/auth";
 
 const FavoriteList = ({ navigation }) => {
+    let userID = firebase.auth().currentUser.email
+    var nameUser   = userID.substring(0, userID.lastIndexOf("@"));
+
     const user = firebase.auth().currentUser;
     //console.log(firebase.auth().currentUser);
     const userID = firebase.auth().currentUser.email
