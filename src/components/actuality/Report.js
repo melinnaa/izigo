@@ -1,22 +1,13 @@
 import React, { useState } from 'react';
-import {
-    SafeAreaView,
-    StyleSheet,
-    View,
-    Text,
-    TouchableOpacity,
-    TextInput,
-    Linking,
-    TouchableHighlight
-} from 'react-native';
+import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity, TextInput, Linking, Button } from 'react-native';
 import Ionicons from "react-native-vector-icons/Ionicons";
 
-const Report = () => {
+const Report = ({ navigation }) => {
     const [twitterViaAccount, settwitterViaAccount] = useState(
         '#RATP #ligne_1',
     );
     const [tweetContent, setTweetContent] = useState(
-        'Il ya un bagage perdu dans la ligne 1 ! un retard ca cest sur!',
+        'Il y a un bagage perdu dans la ligne ... ! un retard ça c\'est sur !',
     );
 
     const tweetNow = () => {
@@ -40,18 +31,27 @@ const Report = () => {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.container}>
+                <Ionicons
+                    name={'arrow-back'} size={35}
+                    title="hier"
+                    style={styles.returnButton}
+                    onPress={() => {
+                        navigation.goBack();
+                    }}
+                />
                 <Ionicons name={'triangle'} size={100} color={"#FE596F"} style={styles.iconTriangle} />
                 <Ionicons name={'alert'} size={60} color={"white"} style={styles.iconAlert} />
 
                 <Text style={styles.title}>Signalement</Text>
                 <TextInput
-                    value={tweetContent}
+                value={tweetContent}
+                    placeholder={'Qui de neuf sur la ligne ?'}
                     onChangeText={
                         (tweetContent) => setTweetContent(tweetContent)
                     }
-                    placeholder={'Qui de neuf sur la ligne ?'}
                     style={styles.input}
-                    multiline={true}
+                    keyboardType="text"
+                    textAlignVertical={'top'}
                 />
 
                 <TextInput
@@ -61,7 +61,6 @@ const Report = () => {
                     }
                     placeholder={'#RATP #ligne13'}
                     style={styles.inputHashtag}
-                    multiline={true}
                 />
                 <TouchableOpacity
                     activeOpacity={0.7}
@@ -81,17 +80,20 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         margin: 1
     },
+    returnButton: {
+        right: "40%",
+    },
     iconTriangle: {
         position: 'absolute',
-        top: 100,
+        top: "10%",
     },
     iconAlert: {
         position: 'absolute',
-        top: 125,
+        top: "13%",
     },
     title: {
         position: 'absolute',
-        top: 220,
+        top: "27%",
         fontFamily: 'Roboto',
         fontStyle: 'normal',
         fontWeight: 'bold',
@@ -105,20 +107,21 @@ const styles = StyleSheet.create({
     input: {
         borderColor: '#D3D3D3',
         opacity: 1,
-        top: 300,
+        top: "37%",
         height: 150,
         width: 350,
         margin: 1,
         borderWidth: 1,
         borderRadius: 20,
-        fontSize: 18
-
+        fontSize: 18,
+        padding: 20,
     },
     inputHashtag: {
         borderColor: '#D3D3D3',
         opacity: 1,
-        top: 310,
+        top: "40%",
         height: 70,
+        padding: 20,
         width: 350,
         margin: 1,
         borderWidth: 1,
@@ -131,7 +134,7 @@ const styles = StyleSheet.create({
         marginRight: 50,
         marginLeft: 40,
         marginTop: 10,
-        padding: 20,
+        padding: 15,
         backgroundColor: '#FE596F',
         borderRadius: 40,
         borderWidth: 1,
