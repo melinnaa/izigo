@@ -9,6 +9,7 @@ import {
     Linking,
     TouchableHighlight
 } from 'react-native';
+
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 const Report = () => {
