@@ -148,6 +148,7 @@ const TrafficFilters = ({ navigation }) => {
                 position.push(formatPosition(pos[i]));
             }
             position.forEach((d) => {
+                console.log(d);
                 setCurrentPosition([...currentPosition,{latitude:d.stop_point.coord.lat,longitude:d.stop_point.coord.lon}])
             })
         })
