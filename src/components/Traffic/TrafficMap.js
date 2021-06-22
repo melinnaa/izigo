@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Text, View, Dimensions, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { Text, View, Dimensions, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import MapView, { Marker, Polyline, Callout } from 'react-native-maps';
 import axios from 'axios';
 import Ionicons from "react-native-vector-icons/Ionicons";
+import { FlatList } from "react-native-gesture-handler";
 
 
 const TrafficMap = ({ route, navigation }) => {
@@ -18,6 +19,17 @@ const TrafficMap = ({ route, navigation }) => {
     const [currentLatitude,setCurrentLatitude] = useState(0);
     const [currentLongitude,setCurrentLongitude] = useState(0);
     const [directionCurrentPosition,setDirectionCurrentPosition] = useState("");
+    const serviceStatus = {
+        NO_SERVICE: "Aucun service",
+        REDUCED_SERVICE: "Service réduit",
+        SIGNIFICANT_DELAYS: "Retards importants",
+        DETOUR: "Déviation",
+        ADDITIONAL_SERVICE: "Service supplémentaire",
+        MODIFIED_SERVICE: "Service modifié",
+        OTHER_EFFECT: "Autre raison",
+        UNKNOWN_EFFECT: "Raison inconnue",
+        STOP_MOVED: "Suspendu"
+    }
 
     const formatLines = (item) => {
         return {
@@ -51,6 +63,20 @@ const TrafficMap = ({ route, navigation }) => {
                 }
             })
             return resp
+
+        } catch (err) {
+            console.log(err.response);
+        }
+    }
+
+    const fetchDisruptions = async () => {
+        try {
+            const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/lines/" + props.id + "/disruptions/?data_freshness=realtime&", {
+                headers: {
+                    'Authorization': `7a9c06ed-e0b6-4bc3-a7da-f27d4cbee972`,
+                }
+            })
+            return resp.data.disruptions
 
         } catch (err) {
             console.log(err.response);
@@ -112,24 +138,14 @@ const TrafficMap = ({ route, navigation }) => {
     //Voir comment transformer dates pour avoir temps d'arrivee
 
     const showDisruptions = () => {
-        console.log("showing disruptions");
-        const data = fetchLineReports();
+        const data = fetchDisruptions();
+        
         Promise.resolve(data).then((response) => {
-            const line = new Array;
-            const report = response.data.line_reports;
-
-            for (var i = 0; i < report.length; i++) {
-                line.push(formatLineReports(report[i]));
+            const disruptions = new Array;
+            for (var i = 0; i < response.length; i++) {
+                disruptions.push(response[i]);
             }
-
-            var disruption = [];
-            line.forEach((d) => {
-                for (let i = 0; i < d.pt_objects.length; i++) {
-                    var rep = { report: d.pt_objects[i].stop_area.name }
-                    disruption = [...disruption, rep]
-                }
-            })
-            setLineReports(disruption);
+            setDisruptions(disruptions);
         })
     }
 
@@ -155,6 +171,8 @@ const TrafficMap = ({ route, navigation }) => {
         })
     }
 
+    console.log(disruptions)
+
     const createPolyline = () => {
         let latLong = [];
         coords.map(({ latitude, longitude }) => {
@@ -164,7 +182,7 @@ const TrafficMap = ({ route, navigation }) => {
         setLinePoints(latLong);
     }
 
-    const takeReports = () => {
+    /*const takeReports = () => {
         var pert = [];
         if(!lineReports.length){
             pert = [...pert, { pert: '0 perturbation' }];
@@ -183,14 +201,15 @@ const TrafficMap = ({ route, navigation }) => {
         }
         //console.log(pert);
         setDisruptions(pert);
-    }
+    }*/
 
     useEffect(() => {
-        const timeout = setTimeout(showResults, 1000);
+        const timeout = setTimeout(showResults, 5000);
         showDisruptions();
-        takeReports();
+        //takeReports();
         createPolyline();
         showPosition();
+        
         return () => {
             clearTimeout(timeout);
         };
@@ -262,15 +281,7 @@ const TrafficMap = ({ route, navigation }) => {
                                             <Ionicons name="subway-outline" size={20} color={color} />
                                             <Text style={styles.timeText}>A: {arrival_time.substr(-6).substr(0, 2) + ":" + arrival_time.substr(-6).substr(2, 2)}</Text>
                                         </View>
-                                    </View>
-                                    { 
-                                        disruptions.map(({pert}) => {
-                                            <View style={styles.reportsContainer}>
-                                                <Text style={styles.reportsText}>{pert}</Text>
-                                            </View>
-                                        })
-                                    }
-                                    
+                                    </View>                                   
                                 </View>
                             </Callout>
                         </Marker>
@@ -291,6 +302,18 @@ const TrafficMap = ({ route, navigation }) => {
                 ></Marker>
                 
             </MapView>
+            <View style={styles.infosContainer}>
+                <FlatList
+                    data={disruptions}
+                    renderItem={({ item }) => (
+                        <View style={[{flexDirection:"row", flexWrap:"wrap"}]}>
+                            <Text>{serviceStatus[item.severity.effect]}</Text>
+                            <Text>{item.messages[0].text}</Text>
+                        </View> 
+                )}
+                keyExtractor={(item) => item.id}
+                />
+            </View>
         </View>
     )
 }
@@ -345,7 +368,7 @@ const styles = StyleSheet.create({
     },
     map: {
         width: Dimensions.get('window').width,
-        height: Dimensions.get('window').height,
+        height: Dimensions.get('window').height*45/100,
     },
     calloutContainer: {
         backgroundColor: 'white',
