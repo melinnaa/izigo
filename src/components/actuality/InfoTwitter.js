@@ -6,7 +6,7 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 const InfoTwitter = ({ navigation, route }) => {
     const [idTransport, setidTransport] = useState([]);
     const [dataTransport, setdataTransport] = useState([]);
-    const [ImageTransport, setImageTransport] = useState([]);
+    const [imageTransport, setImageTransport] = useState([]);
 
     const title = route.params;
     const [refreshing, setRefreshing] = React.useState(false);
@@ -25,7 +25,6 @@ const InfoTwitter = ({ navigation, route }) => {
             const resp = await axios.get(`https://api.twitter.com/1.1/users/show.json?user_id=${idTransport}`, {
                 headers: {
                     Authorization: `Bearer ${'AAAAAAAAAAAAAAAAAAAAABABQgEAAAAA9SXFVGSLYdYaBrn9jGFD6queSrY%3DV5KKLwEUJKio24ggY4JjnuRMTa33z5uWDhqKPQBTyCaazHjEkL'}`,
-                    "Access-Control-Allow-Origin": "http://localhost:19006/",
                     "Access-Control-Allow-Credentials": true,
                     "Content-Type": "application/json"
                 }
@@ -41,7 +40,6 @@ const InfoTwitter = ({ navigation, route }) => {
             const resp = await axios.get("https://api.twitter.com/2/users/" + idTransport + "/tweets?tweet.fields=context_annotations", {
                 headers: {
                     Authorization: `Bearer ${'AAAAAAAAAAAAAAAAAAAAABABQgEAAAAA9SXFVGSLYdYaBrn9jGFD6queSrY%3DV5KKLwEUJKio24ggY4JjnuRMTa33z5uWDhqKPQBTyCaazHjEkL'}`,
-                    "Access-Control-Allow-Origin": "http://localhost:19006/",
                     "Access-Control-Allow-Credentials": true,
                     "Content-Type": "application/json"
                 }
@@ -58,7 +56,6 @@ const InfoTwitter = ({ navigation, route }) => {
             const resp = await axios.get(`https://api.twitter.com/2/users/by/username/${title}`, {
                 headers: {
                     Authorization: `Bearer ${'AAAAAAAAAAAAAAAAAAAAABABQgEAAAAA9SXFVGSLYdYaBrn9jGFD6queSrY%3DV5KKLwEUJKio24ggY4JjnuRMTa33z5uWDhqKPQBTyCaazHjEkL'}`,
-                    "Access-Control-Allow-Origin": "http://localhost:19006/",
                     "Access-Control-Allow-Credentials": true,
                     "Content-Type": "application/json"
                 }
@@ -74,7 +71,7 @@ const InfoTwitter = ({ navigation, route }) => {
         fetchImageTransport();
         fetchIdTransport();
         fetchDataTransport();
-    }, []);
+    }, [idTransport, imageTransport, dataTransport]);
 
     const fetchImageTransport = () => {
         const data = getImageTransport();
@@ -120,7 +117,7 @@ const InfoTwitter = ({ navigation, route }) => {
             <Text style={styles.title}>Info Traffic</Text>
             <Image
                 style={styles.ImageBigTransport}
-                source={{ uri: ImageTransport }}
+                source={{ uri: imageTransport }}
             />
             <View style={styles.rectangle}></View>
             <Text style={styles.text}>Trafic sur {title}</Text>
@@ -131,7 +128,7 @@ const InfoTwitter = ({ navigation, route }) => {
                     <View>
                         <Image
                             style={{ width: 50, height: 50 }}
-                            source={{ uri: ImageTransport }}
+                            source={{ uri: imageTransport }}
                         />
                         <View style={styles.tweet}>
                             <View style={styles.descriptionTweet}>
