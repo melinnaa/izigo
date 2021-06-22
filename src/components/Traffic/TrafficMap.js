@@ -15,7 +15,8 @@ const TrafficMap = ({ route, navigation }) => {
     const [lineReports, setLineReports] = useState([]);
     const [disruptions, setDisruptions] = useState([]);
     const [color] = useState("#" + props.color);
-    const [currentPosition,setCurrentPosition] = useState([]);
+    const [currentLatitude,setCurrentLatitude] = useState(0);
+    const [currentLongitude,setCurrentLongitude] = useState(0);
 
     const formatLines = (item) => {
         return {
@@ -38,7 +39,6 @@ const TrafficMap = ({ route, navigation }) => {
             latitude:item.stop_point.coord.lat,
             longitude:item.stop_point.coord.lon,
         }
-        
     }
 
     const fetchData = async () => {
@@ -71,7 +71,7 @@ const TrafficMap = ({ route, navigation }) => {
 
     const fetchPosition = async() => {
         try {
-            const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/physical_modes/physical_mode%3AMetro/lines/"+props.id+"/departures?data_freshness=realtime&count=1&", {
+            const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/lines/"+props.id+"/departures?data_freshness=realtime&count=1&", {
                 headers: {
                     'Authorization': `7a9c06ed-e0b6-4bc3-a7da-f27d4cbee972`,
                 }
@@ -116,20 +116,16 @@ const TrafficMap = ({ route, navigation }) => {
             const line = new Array;
             const report = response.data.line_reports;
 
-
             for (var i = 0; i < report.length; i++) {
                 line.push(formatLineReports(report[i]));
             }
 
             var disruption = [];
-
             line.forEach((d) => {
-
                 for (let i = 0; i < d.pt_objects.length; i++) {
                     var rep = { report: d.pt_objects[i].stop_area.name }
                     disruption = [...disruption, rep]
                 }
-
             })
             setLineReports(disruption);
         })
@@ -140,19 +136,15 @@ const TrafficMap = ({ route, navigation }) => {
         const data = fetchPosition();
         Promise.resolve(data).then((response) => {
             const position = new Array;
-            const pos = response.data.departures[0];
-            
-            position.push(formatPosition(pos));
+            const pos = response.data.departures;
 
-            /*for (var i = 0; i < pos.length; i++) {
+            for (var i = 0; i < pos.length; i++) {
                 position.push(formatPosition(pos[i]));
-            }*/
+            }
 
-           
             position.forEach((d) => {
-                console.log(d);
-                dataPos = {latitude:parseFloat(d.latitude),longitude:parseFloat(d.longitude)};
-                setCurrentPosition([...currentPosition,dataPos])
+                setCurrentLatitude(parseFloat(d.latitude));
+                setCurrentLongitude(parseFloat(d.longitude));
                
             })
             
@@ -186,7 +178,7 @@ const TrafficMap = ({ route, navigation }) => {
                 })
             })
         }
-        console.log(pert);
+        //console.log(pert);
         setDisruptions(pert);
     }
 
@@ -200,8 +192,6 @@ const TrafficMap = ({ route, navigation }) => {
             clearTimeout(timeout);
         };
     }, [coords]);
-
-    //console.log(currentPosition);
 
     return (
         <View style={styles.container}>
@@ -288,19 +278,13 @@ const TrafficMap = ({ route, navigation }) => {
                     strokeColor={color} // fallback for when `strokeColors` is not supported by the map-provider
                     strokeWidth={4}
                 />
-                {
-                    currentPosition.map(({latitude,longitude})=>{
-                        <Marker 
-                            coordinate={{
-                                latitude:latitude,
-                                longitude:longitude
-                            }}
-                            pinColor='red'
-                        >
-
-                        </Marker>
-                    })
-                }
+                <Marker 
+                    coordinate={{
+                        latitude:currentLatitude,
+                        longitude:currentLongitude
+                    }}
+                    pinColor={color}
+                ></Marker>
                 
             </MapView>
         </View>

@@ -11,10 +11,9 @@ const TrafficFilters = ({ navigation }) => {
     const [listLines, setListLines] = useState([]);
     const [listTram, setListTram] = useState([]);
     const [listStation, setListStation] = useState([]);
-    const [listStopAreas,setListStopAreas] = useState([]);
-    const [selectedId,setSelectedId] = useState(null);
+    const [listStopAreas, setListStopAreas] = useState([]);
     const [isFetching, setIsFetching] = useState(false);
-    const [currentPosition, setCurrentPosition] = useState([]);
+    const [stopArea, setStopArea] = useState("");
 
     const formatLines = (item) => {
         return {
@@ -29,13 +28,13 @@ const TrafficFilters = ({ navigation }) => {
         }
     }
 
-    const formatRER = (item) =>{
-        return{
-            id:item.id,
-            code:item.network.name+" "+item.code,
-            name:item.routes[0].name,
-            color:item.color,
-            routes:item.routes,
+    const formatRER = (item) => {
+        return {
+            id: item.id,
+            code: item.network.name + " " + item.code,
+            name: item.routes[0].name,
+            color: item.color,
+            routes: item.routes,
             fromLon: item.routes[0].direction.stop_area.coord.lon,
             fromLat: item.routes[0].direction.stop_area.coord.lat,
             toLon: item.routes[1].direction.stop_area.coord.lon,
@@ -46,16 +45,9 @@ const TrafficFilters = ({ navigation }) => {
     const formatStations = (item) => {
         return {
             label: item.label,
-            id: item.id,
-            name: item.name
+            id: item.stop_point.id,
+            name: item.stop_point.name,
         }
-    }
-    const formatPosition = (item) =>{
-        return{
-            latitude:item.stop_point.coord.lat,
-            longitude:item.stop_point.coord.lon,
-        }
-        
     }
 
     const showResults = () => {
@@ -74,7 +66,7 @@ const TrafficFilters = ({ navigation }) => {
                 if (d.code == line) {
                     search = { id: d.id, name: d.name, code: d.code, fromLon: d.fromLon, fromLat: d.fromLat, toLon: d.toLon, toLat: d.toLat, color: d.color }
                     setListLines([...listLines, search]);
-                    setListResults([...listResults,search]);
+                    setListResults([...listResults, search]);
                 }
             })
         })
@@ -92,15 +84,15 @@ const TrafficFilters = ({ navigation }) => {
             }
 
             transport.forEach((d) => {
-                if (d.code==line) {
-                    var search = { id: d.id, name: d.name, code: d.code, fromLon: d.fromLon, fromLat: d.fromLat, toLon: d.toLon, toLat: d.toLat, color:d.color }
-                    setListResults([...listResults,search]);
+                if (d.code == line) {
+                    var search = { id: d.id, name: d.name, code: d.code, fromLon: d.fromLon, fromLat: d.fromLat, toLon: d.toLon, toLat: d.toLat, color: d.color }
+                    setListResults([...listResults, search]);
                 }
             })
         })
     }
 
-    const showResultsRER = () =>{
+    const showResultsRER = () => {
         console.log("showing");
         const dataRER = fetchDataRER();
         Promise.resolve(dataRER).then((response) => {
@@ -110,12 +102,13 @@ const TrafficFilters = ({ navigation }) => {
             for (var i = 0; i < lignes.length; i++) {
                 transport.push(formatRER(lignes[i]));
             }
-
+            
             transport.forEach((d) => {
-                if (d.code==line) {
-                    var search = { id: d.id, name: d.name, code: d.code, color:d.color, routes:d.routes}
+                console.log(d.toLat);
+                if (d.code == line) {
+                    var search = { id: d.id, name: d.name, code: d.code, color: d.color, routes: d.routes, fromLat: d.fromLat, toLon: d.toLon, toLat: d.toLat }
                     setListTram([...listTram, search]);
-                    setListResults([...listResults,search]);
+                    setListResults([...listResults, search]);
                 }
             })
         })
@@ -138,25 +131,9 @@ const TrafficFilters = ({ navigation }) => {
                 setListStation([...listStation, search]);
             })
         })
-        
+
     }
 
-    const showPosition = () =>{
-        console.log("showing")
-        const data = fetchPosition();
-        Promise.resolve(data).then((response) => {
-            const position = new Array;
-            const pos = response.data.arrivals;
-
-            for (var i = 0; i < pos.length; i++) {
-                position.push(formatPosition(pos[i]));
-            }
-            position.forEach((d) => {
-                console.log(d);
-                setCurrentPosition([...currentPosition,{latitude:d.stop_point.coord.lat,longitude:d.stop_point.coord.lon}])
-            })
-        })
-    }
 
     const fetchData = async () => {
         try {
@@ -187,7 +164,7 @@ const TrafficFilters = ({ navigation }) => {
         }
     }
 
-    const fetchDataRER = async () =>{
+    const fetchDataRER = async () => {
         try {
             const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/physical_modes/physical_mode%3ARapidTransit/lines?", {
                 headers: {
@@ -203,7 +180,7 @@ const TrafficFilters = ({ navigation }) => {
 
     const fetchDataStation = async () => {
         try {
-            const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/stop_areas?", {
+            const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/physical_modes/physical_mode%3AMetro/lines/" + listResults[listResults.length - 1].id + "/stop_areas?", {
                 headers: {
                     'Authorization': `7a9c06ed-e0b6-4bc3-a7da-f27d4cbee972`,
                 }
@@ -221,37 +198,23 @@ const TrafficFilters = ({ navigation }) => {
         Promise.resolve(data).then((response) => {
             const transport = new Array;
             const stop_areas = response.data.stop_areas;
-
+            
             for (var i = 0; i < stop_areas.length; i++) {
                 transport.push(formatStations(stop_areas[i]));
             }
-            
+            console.log(transport);
             transport.forEach(async (d) => {
-                setListStopAreas([...listStopAreas,{id:d.id, name:d.name}]);
+                if (d.name == station) {
+                    setStopArea(d.id);
+                }
+                //setListStopAreas([...listStopAreas,{id:d.id, name:d.name}]);
             })
         })
     }
 
-    const fetchLinesForStation = async () =>{
-        for(let i=0;i<listStopAreas.length;i++){
-            try {
-                const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/stop_areas/" + listStopAreas[i].id + "/lines?", {
-                    headers: {
-                        'Authorization': `7a9c06ed-e0b6-4bc3-a7da-f27d4cbee972`,
-                    }
-                })
-
-                return resp
-
-            } catch (err) {
-                console.log(err.response);
-            }
-        }
-    }
-
-    const fetchPosition = async() => {
+    const fetchLinesForStation = async () => {
         try {
-            const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/lines/"+listResults[listResults.length-1].id+"/arrivals?data_freshness=realtime&count=1&", {
+            const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/physical_modes/physical_mode%3AMetro/lines/"+listResults[listResults.length-1].id+"/stop_areas/"+stopArea+"/stop_schedules?", {
                 headers: {
                     'Authorization': `7a9c06ed-e0b6-4bc3-a7da-f27d4cbee972`,
                 }
@@ -262,9 +225,10 @@ const TrafficFilters = ({ navigation }) => {
         } catch (err) {
             console.log(err.response);
         }
+
     }
 
-    const onRefresh = () =>{
+    const onRefresh = () => {
         setIsFetching(true);
         showResults();
         showResultsTram();
@@ -279,19 +243,17 @@ const TrafficFilters = ({ navigation }) => {
         const timeout = setTimeout(showResults, 1000);
         showResultsTram();
         showResultsRER();
+        fetchDataStation();
         fetchStopAreas();
         fetchLinesForStation();
-        showPosition();
-        
+
         const timeout2 = setTimeout(showResultsStation, 1000);
         return () => {
             clearTimeout(timeout);
             clearTimeout(timeout2);
         };
     }, [line, station]);
-
-    console.log(currentPosition);
-
+    
     if (line == "") {
         return (
             <View style={styles.container}>
@@ -373,7 +335,7 @@ const TrafficFilters = ({ navigation }) => {
                         data={listResults}
                         renderItem={({ item }) => (
                             <TouchableOpacity style={styles.itemContainer} onPress={() => navigation.navigate("TrafficMap", { props: item, line: line })}>
-                                <TouchableOpacity style={{backgroundColor:"#"+item.color, paddingHorizontal:5, borderRadius:80 }}>
+                                <TouchableOpacity style={{ backgroundColor: "#" + item.color, paddingHorizontal: 5, borderRadius: 80 }}>
                                     <Text style={styles.items}>{item.code}</Text>
                                 </TouchableOpacity>
                                 <Text style={styles.itemName}>{item.name}</Text>
@@ -456,14 +418,16 @@ const styles = StyleSheet.create({
         color: "black",
         fontSize: 14,
         fontFamily: 'NunitoBold',
+        alignItems: 'center',
+        justifyContent: 'center'
     },
-    itemName:{
+    itemName: {
         color: "black",
         fontSize: 14,
         fontFamily: 'NunitoBold',
-        alignItems:'center',
-        justifyContent:'center',
-        paddingLeft:5
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingLeft: 5
     }
 })
 
