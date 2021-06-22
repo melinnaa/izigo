@@ -68,6 +68,7 @@ const FavoriteList = ({ navigation }) => {
     }
 
     }
+    console.log(myData);
     return (
         <View style={styles.container}>
             <Text style={styles.bonjourText}>Bonjour</Text>
