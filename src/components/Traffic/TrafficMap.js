@@ -112,7 +112,7 @@ const TrafficMap = ({ route, navigation }) => {
     //Voir comment transformer dates pour avoir temps d'arrivee
 
     const showDisruptions = () => {
-        console.log("showing");
+        console.log("showing disruptions");
         const data = fetchLineReports();
         Promise.resolve(data).then((response) => {
             const line = new Array;
