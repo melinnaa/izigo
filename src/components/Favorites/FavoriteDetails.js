@@ -12,7 +12,7 @@ const FavoriteDetails = ({ route, navigation }) => {
                 <TouchableOpacity style={styles.buttonBack} onPress={() => navigation.goBack()}>
                     <Ionicons name="arrow-back-outline" size={25} color="#ffffff" />
                 </TouchableOpacity>
-                <Text style={styles.titleText}>{props.departure} - {props.arrival}</Text>
+                <Text style={styles.titleText}>{props.departure.name} - {props.arrival.name}</Text>
             </View>
             <View style={styles.itemsContainer}>
                 <Ionicons name="hourglass-outline" size={30} color="#000000" />
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
     },
     titleText: {
         color: '#ffffff',
-        fontFamily: 'NunitoBold',
+        //fontFamily: 'NunitoBold',
         fontSize: 18,
         //alignSelf:"center",
         justifyContent: "center",
@@ -92,14 +92,14 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10
     },
     itemsText: {
-        fontFamily: 'NunitoBold',
+        //fontFamily: 'NunitoBold',
         fontSize: 14,
         //alignSelf:'flex-start'
         justifyContent: "center",
         alignItems: "center"
     },
     dataText: {
-        fontFamily: 'NunitoBold',
+        //fontFamily: 'NunitoBold',
         fontSize: 18,
         paddingRight: 5
     },
@@ -110,12 +110,12 @@ const styles = StyleSheet.create({
         alignItems: "center"
     },
     connectionsText: {
-        fontFamily: "NunitoBold",
+        //fontFamily: "NunitoBold",
         fontSize: 14
     },
     lineText: {
         paddingRight: 10,
-        fontFamily: 'NunitoBold',
+        //fontFamily: 'NunitoBold',
         fontSize: 14,
     },
     buttonContainer: {
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20
     },
     buttonText: {
-        fontFamily: 'NunitoBold',
+        //fontFamily: 'NunitoBold',
         fontSize: 14,
         color: "white"
     }

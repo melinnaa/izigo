@@ -6,30 +6,55 @@ import "firebase/auth";
 
 const FavoriteList = ({ navigation }) => {
     const user = firebase.auth().currentUser;
+    console.log(firebase.auth().currentUser);
     const userID = firebase.auth().currentUser.email
     var nameUser   = userID.substring(0, userID.lastIndexOf("@"));
+    const userUID = firebase.auth().currentUser.uid
 
     const [myData, setMyData] = useState([])
 
     const db = firebase.firestore();
 
+    useEffect(()=>{
+        const dataFavoris = []
+        db.collection('Courses')
+            .where("idUser","==",userUID)
+            .get()
+            .then(snapshot => {
+                snapshot.docs.forEach(favoris => {
+                    let currentID = favoris.id
+                    let appObj = { ...favoris.data(), ['id']: currentID }
+                    //dataFavoris.push(appObj)
+
+                    dataFavoris.push(favoris.data())
+            })
+            setMyData(dataFavoris)
+        })
+    },[myData])
+/*
     if (user) {
-        db.collection("Courses")
+        //console.log(user.uid);
+        db.collection("Courses").where("idUser","==",user.uid)
             .get()
             .then((querySnapshot) => {
-                let d = querySnapshot.docs.map((doc) => {
-                    console.log(querySnapshot)
+                querySnapshot.docs.map((doc) => {
+                    //console.log(querySnapshot)
+                    //console.log(doc.data());
+                    data = doc.data();
+                    
                 });
-                setMyData(d);
+                
             })
             .catch((error) => {
                 console.log("Error getting documents: ", error);
             });
+            setMyData([...myData,data]); 
+             
     }
     else {
         navigation.navigate('Login');
     }
-
+*/
     const signOut = async () => {
         try {
             await firebase.auth().signOut();
@@ -41,6 +66,7 @@ const FavoriteList = ({ navigation }) => {
           navigation.navigate('Login');
 
     }
+    console.log(myData);
     return (
         <View style={styles.container}>
             <Text style={styles.bonjourText}>Bonjour</Text>
@@ -58,14 +84,14 @@ const FavoriteList = ({ navigation }) => {
             </View>
             <FlatList
                 data={myData}
-                keyExtractor={(item) => item.id.toString()}
+                keyExtractor={(item) =>item.id}
                 renderItem={({ item }) => (
                     <View style={styles.itemContainer}>
                         <View style={styles.courseContainer}>
                             <Ionicons name="navigate-outline" size={35} color="#000000" />
-                            <Text style={styles.item}>{item.departure} - {item.arrival}</Text>
+                            <Text style={styles.item}>{item.departure.name} - {item.arrival.name}</Text>
                         </View>
-                        <TouchableOpacity key={item.id} onPress={() => navigation.navigate("FavoriteDetails", { props: item })}>
+                        <TouchableOpacity  onPress={() => navigation.navigate("FavoriteDetails", { props: item })}>
                             <Ionicons name="chevron-forward-outline" size={35} color="#000000" />
                         </TouchableOpacity>
                     </View>
@@ -84,7 +110,7 @@ const styles = StyleSheet.create({
         margin: 1
     },
     bonjourText: {
-        fontFamily: "NunitoLight",
+        //fontFamily: "NunitoLight",
         fontSize: 36,
         //fontWeight:"normal",
         paddingTop: "15%",
@@ -92,7 +118,7 @@ const styles = StyleSheet.create({
     },
     nameText: {
         fontSize: 36,
-        fontFamily: "NunitoBold",
+        //fontFamily: "NunitoBold",
         //fontWeight:"bold",
         paddingBottom: 45,
         paddingLeft: 20
@@ -107,7 +133,7 @@ const styles = StyleSheet.create({
     },
     favorisText: {
         fontSize: 28,
-        fontFamily: "NunitoBold",
+        //fontFamily: "NunitoBold",
         paddingRight: 20,
         paddingBottom: 20,
         paddingLeft: 20,
@@ -119,19 +145,23 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: "rgba(0, 0, 0, 0.2)",
         paddingVertical: 20,
-        paddingHorizontal: 10
+        paddingHorizontal: 20
     },
     item: {
         fontSize: 14,
-        fontFamily: "NunitoBold",
+        //fontFamily: "NunitoBold",
         alignSelf: "center",
-        paddingLeft: 10
+        paddingLeft: 10,
+        paddingRight: 10
     },
     signOutButton: {
         top: "-13%",
         left: "70%",
         color: "#A0A0A0",
-        textAlign: "center"
+        textAlign: "center",
+        backgroundColor:"#FE596F",
+        borderRadius:6,
+        paddingVertical:5
     }
 })
 
