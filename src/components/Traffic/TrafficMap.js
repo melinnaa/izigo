@@ -17,6 +17,7 @@ const TrafficMap = ({ route, navigation }) => {
     const [color] = useState("#" + props.color);
     const [currentLatitude,setCurrentLatitude] = useState(0);
     const [currentLongitude,setCurrentLongitude] = useState(0);
+    const [directionCurrentPosition,setDirectionCurrentPosition] = useState("");
 
     const formatLines = (item) => {
         return {
@@ -38,6 +39,7 @@ const TrafficMap = ({ route, navigation }) => {
         return{
             latitude:item.stop_point.coord.lat,
             longitude:item.stop_point.coord.lon,
+            direction:route.direction.name
         }
     }
 
@@ -145,6 +147,7 @@ const TrafficMap = ({ route, navigation }) => {
             position.forEach((d) => {
                 setCurrentLatitude(parseFloat(d.latitude));
                 setCurrentLongitude(parseFloat(d.longitude));
+                setDirectionCurrentPosition(d.direction);
                
             })
             
@@ -284,6 +287,7 @@ const TrafficMap = ({ route, navigation }) => {
                         longitude:currentLongitude
                     }}
                     pinColor={color}
+                    title={"Direction: "+ directionCurrentPosition}
                 ></Marker>
                 
             </MapView>
