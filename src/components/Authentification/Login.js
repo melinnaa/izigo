@@ -249,7 +249,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#FE596F',
         borderRadius: 40,
         borderWidth: 1,
-        borderColor: '#fff'
+        borderColor: '#fff',
+        zIndex:5
     },
     submitText: {
         color: '#fff',
