@@ -5,7 +5,7 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 const FavoriteDetails = ({ route, navigation }) => {
     const { props } = route.params;
     const [transportName,setTransportName] = useState("");
-
+    console.log(props.sections);
     return (
         <View style={styles.container}>
             <View style={styles.titleContainer}>
@@ -29,14 +29,15 @@ const FavoriteDetails = ({ route, navigation }) => {
                 <Text style={styles.itemsText}>Parcours préférés</Text>
                 <Text></Text>
             </View>
-            {
-                props.connections.map(({ idTransport, startPoint, stopPoint }) =>
+
+            { 
+                JSON.parse(props.sections).map((section) =>
                     <View style={styles.connectionContainer}>
-                        <Text style={styles.lineText}>{idTransport}</Text>
-                        <Text style={styles.connectionsText}>{startPoint}</Text>
+                        <Text style={styles.lineText}>{section.arrival_date_time}</Text>
+                        <Text style={styles.connectionsText}>{section.from.name}</Text>
                         <Text style={styles.connectionsText}> {">"} </Text>
-                        <Text style={styles.connectionsText}>{stopPoint}</Text>
-                    </View>
+                        <Text style={styles.connectionsText}>{section.to.name}</Text>
+                    </View> 
 
                 )
             }
@@ -104,10 +105,13 @@ const styles = StyleSheet.create({
         paddingRight: 5
     },
     connectionContainer: {
-        paddingVertical: 10,
+        paddingTop: 40,
+        paddingBottom: 10,
+        paddingLeft: 30,
+        textAlign: "center",
         flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center"
+        width: 200,
+
     },
     connectionsText: {
         //fontFamily: "NunitoBold",

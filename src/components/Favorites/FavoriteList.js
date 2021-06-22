@@ -6,19 +6,19 @@ import "firebase/auth";
 
 const FavoriteList = ({ navigation }) => {
     const user = firebase.auth().currentUser;
-    console.log(firebase.auth().currentUser);
+    //console.log(firebase.auth().currentUser);
     const userID = firebase.auth().currentUser.email
-    var nameUser   = userID.substring(0, userID.lastIndexOf("@"));
+    var nameUser = userID.substring(0, userID.lastIndexOf("@"));
     const userUID = firebase.auth().currentUser.uid
 
     const [myData, setMyData] = useState([])
 
     const db = firebase.firestore();
 
-    useEffect(()=>{
+    useEffect(() => {
         const dataFavoris = []
         db.collection('Courses')
-            .where("idUser","==",userUID)
+            .where("idUser", "==", userUID)
             .get()
             .then(snapshot => {
                 snapshot.docs.forEach(favoris => {
@@ -27,46 +27,46 @@ const FavoriteList = ({ navigation }) => {
                     //dataFavoris.push(appObj)
 
                     dataFavoris.push(favoris.data())
+                })
+                setMyData(dataFavoris)
             })
-            setMyData(dataFavoris)
-        })
-    },[myData])
-/*
-    if (user) {
-        //console.log(user.uid);
-        db.collection("Courses").where("idUser","==",user.uid)
-            .get()
-            .then((querySnapshot) => {
-                querySnapshot.docs.map((doc) => {
-                    //console.log(querySnapshot)
-                    //console.log(doc.data());
-                    data = doc.data();
+    }, [myData])
+    /*
+        if (user) {
+            //console.log(user.uid);
+            db.collection("Courses").where("idUser","==",user.uid)
+                .get()
+                .then((querySnapshot) => {
+                    querySnapshot.docs.map((doc) => {
+                        //console.log(querySnapshot)
+                        //console.log(doc.data());
+                        data = doc.data();
+                        
+                    });
                     
+                })
+                .catch((error) => {
+                    console.log("Error getting documents: ", error);
                 });
-                
-            })
-            .catch((error) => {
-                console.log("Error getting documents: ", error);
-            });
-            setMyData([...myData,data]); 
-             
-    }
-    else {
-        navigation.navigate('Login');
-    }
-*/
+                setMyData([...myData,data]); 
+                 
+        }
+        else {
+            navigation.navigate('Login');
+        }
+    */
     const signOut = async () => {
         try {
             await firebase.auth().signOut();
             const user = firebase.auth().currentUser;
-                alert("Vous êtes bien déconnecter !");
-          } catch (e){
-                alert("Erreur")
-          } 
-          navigation.navigate('Login');
+            alert("Vous êtes bien déconnecter !");
+        } catch (e) {
+            alert("Erreur")
+        }
+        navigation.navigate('Login');
 
     }
-    console.log(myData);
+
     return (
         <View style={styles.container}>
             <Text style={styles.bonjourText}>Bonjour</Text>
@@ -84,16 +84,18 @@ const FavoriteList = ({ navigation }) => {
             </View>
             <FlatList
                 data={myData}
-                keyExtractor={(item) =>item.id}
+                keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
                     <View style={styles.itemContainer}>
                         <View style={styles.courseContainer}>
                             <Ionicons name="navigate-outline" size={35} color="#000000" />
                             <Text style={styles.item}>{item.departure.name} - {item.arrival.name}</Text>
                         </View>
-                        <TouchableOpacity  onPress={() => navigation.navigate("FavoriteDetails", { props: item })}>
-                            <Ionicons name="chevron-forward-outline" size={35} color="#000000" />
-                        </TouchableOpacity>
+                        <View style={styles.chevronContainer}>
+                            <TouchableOpacity onPress={() => navigation.navigate("FavoriteDetails", { props: item })}>
+                                <Ionicons name="chevron-forward-outline" size={35} color="#000000" />
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 )}
 
@@ -129,7 +131,12 @@ const styles = StyleSheet.create({
         borderBottomColor: "rgba(0, 0, 0, 0.2)"
     },
     courseContainer: {
-        flexDirection: 'row'
+        flexDirection: 'row',
+        paddingRight: 20,
+    },
+    chevronContainer:{
+        paddingRight: 0,
+        paddingRight: 10
     },
     favorisText: {
         fontSize: 28,
@@ -145,23 +152,24 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: "rgba(0, 0, 0, 0.2)",
         paddingVertical: 20,
-        paddingHorizontal: 20
+        paddingRight: "20%",
+        paddingLeft: "5%",
     },
     item: {
         fontSize: 14,
         //fontFamily: "NunitoBold",
-        alignSelf: "center",
+        alignItems: "center",
+        justifyContent: 'flex-start',
         paddingLeft: 10,
-        paddingRight: 10
+        paddingRight: 20
     },
     signOutButton: {
         top: "-13%",
         left: "70%",
         color: "#A0A0A0",
         textAlign: "center",
-        backgroundColor:"#FE596F",
-        borderRadius:6,
-        paddingVertical:5
+        borderRadius: 6,
+        paddingVertical: 5
     }
 })
 
