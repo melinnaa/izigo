@@ -5,9 +5,6 @@ import * as firebase from "firebase";
 import "firebase/auth";
 
 const FavoriteList = ({ navigation }) => {
-    let userID = firebase.auth().currentUser.email
-    var nameUser   = userID.substring(0, userID.lastIndexOf("@"));
-
     const user = firebase.auth().currentUser;
     //console.log(firebase.auth().currentUser);
     const userID = firebase.auth().currentUser.email
@@ -71,15 +68,6 @@ const FavoriteList = ({ navigation }) => {
     }
 
     }
-    /*
-    firebase.auth().onAuthStateChanged(user => {
-        if (user){
-            console.log('user is logged in ' , user)
-        }
-        else{
-            console.log('user is logged out ')
-        }
-    })*/
     return (
         <View style={styles.container}>
             <Text style={styles.bonjourText}>Bonjour</Text>
