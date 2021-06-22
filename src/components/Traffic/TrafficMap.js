@@ -71,7 +71,7 @@ const TrafficMap = ({ route, navigation }) => {
 
     const fetchPosition = async() => {
         try {
-            const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/lines/"+props.id+"/departures?data_freshness=realtime&count=1&", {
+            const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/physical_modes/physical_mode%3AMetro/lines/"+props.id+"/departures?data_freshness=realtime&count=1&", {
                 headers: {
                     'Authorization': `7a9c06ed-e0b6-4bc3-a7da-f27d4cbee972`,
                 }
@@ -140,21 +140,23 @@ const TrafficMap = ({ route, navigation }) => {
         const data = fetchPosition();
         Promise.resolve(data).then((response) => {
             const position = new Array;
-            const pos = response.data.departures;
+            const pos = response.data.departures[0];
+            
+            position.push(formatPosition(pos));
 
-            for (var i = 0; i < pos.length; i++) {
+            /*for (var i = 0; i < pos.length; i++) {
                 position.push(formatPosition(pos[i]));
-            }
+            }*/
 
-            var actualPos = [];
-
+           
             position.forEach((d) => {
-                //console.log(d);
-                var dataPos = {latitude:d.stop_point.coord.lat,longitude:d.stop_point.coord.lon};
-                actualPos = [...actualPos,dataPos];
+                console.log(d);
+                dataPos = {latitude:parseFloat(d.latitude),longitude:parseFloat(d.longitude)};
+                setCurrentPosition([...currentPosition,dataPos])
                
             })
-            setCurrentPosition([...currentPosition,actualPos])
+            
+            
         })
     }
 
@@ -169,16 +171,21 @@ const TrafficMap = ({ route, navigation }) => {
 
     const takeReports = () => {
         var pert = [];
-        coords.map(({ name }) => {
-            lineReports.map(({ report }) => {
-                if (name == report) {
-                    pert = [...pert, { pert: '1 perturbation' }]
-                }
-                else {
-                    pert = [...pert, { pert: '0 perturbation' }];
-                }
+        if(!lineReports.length){
+            pert = [...pert, { pert: '0 perturbation' }];
+        }
+        else{
+            coords.map(({ name }) => {
+                lineReports.map(({ report }) => {
+                    if (name == report) {
+                        pert = [...pert, { pert: '1 perturbation' }]
+                    }
+                    else {
+                        pert = [...pert, { pert: '0 perturbation' }];
+                    }
+                })
             })
-        })
+        }
         console.log(pert);
         setDisruptions(pert);
     }
@@ -194,7 +201,7 @@ const TrafficMap = ({ route, navigation }) => {
         };
     }, [coords]);
 
-    console.log(currentPosition);
+    //console.log(currentPosition);
 
     return (
         <View style={styles.container}>
@@ -281,6 +288,20 @@ const TrafficMap = ({ route, navigation }) => {
                     strokeColor={color} // fallback for when `strokeColors` is not supported by the map-provider
                     strokeWidth={4}
                 />
+                {
+                    currentPosition.map(({latitude,longitude})=>{
+                        <Marker 
+                            coordinate={{
+                                latitude:latitude,
+                                longitude:longitude
+                            }}
+                            pinColor='red'
+                        >
+
+                        </Marker>
+                    })
+                }
+                
             </MapView>
         </View>
     )
@@ -345,6 +366,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         width: 200,
         height: 100,
+        flexDirection:'column',
         alignItems: 'center',
         justifyContent: 'center'
     },

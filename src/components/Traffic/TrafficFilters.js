@@ -35,7 +35,11 @@ const TrafficFilters = ({ navigation }) => {
             code:item.network.name+" "+item.code,
             name:item.routes[0].name,
             color:item.color,
-            routes:item.routes
+            routes:item.routes,
+            fromLon: item.routes[0].direction.stop_area.coord.lon,
+            fromLat: item.routes[0].direction.stop_area.coord.lat,
+            toLon: item.routes[1].direction.stop_area.coord.lon,
+            toLat: item.routes[1].direction.stop_area.coord.lat,
         }
     }
 
