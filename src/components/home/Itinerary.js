@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { StyleSheet, Text, View, Dimensions, ScrollView, Image, TouchableOpacity } from 'react-native';
+import { StackActions } from '@react-navigation/native';
+import { StyleSheet, Text, View, Dimensions, ScrollView, Image, TouchableOpacity, Alert } from 'react-native';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps'
 import { Marker } from 'react-native-maps';
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -9,16 +10,8 @@ import firebase from './../../Firebase/firebase';
 import '@firebase/firestore'
 
 const Itinerary = ({navigation, route}) => {
-	const [itinerary, setItinerary] = useState(route.params.itinerary)
+	const [itinerary, setItinerary] = useState()
 	const [isFavorite, setIsFavorite] = useState(route.params.isFavorite)
-		//id
-		//departure
-		//arrival
-        //duration (min)
-        //les différentes parties du parcours (metro, marche, etc): sections
-        //heure de départ: "departure_date_time"
-        //heure d'arrivée: "arrival_date_time"
-
 	const [paths, setPaths] = useState();
 	const [markers, setMarkers] = useState();
 
@@ -26,14 +19,30 @@ const Itinerary = ({navigation, route}) => {
 	const user = firebase.auth().currentUser
 
 	useEffect(() => {
+		if (!itinerary){
+			const iti = route.params.itinerary
+			const sections = JSON.parse(iti.sections)
+			setItinerary({
+				id: iti.id,
+           	 	departure: iti.departure,
+            	arrival: iti.arrival,
+            	duration: iti.duration,
+            	sections: sections,
+            	timeOfDeparture: iti.timeOfDeparture,
+            	timeOfArrival: iti.timeOfArrival
+			})
+		}
+	}, [itinerary]);
+	
+	useEffect(() => {
 		if (!paths){
 			fetchCoordinates();
 		}
-	});
+	}, []);
 	
 	const fetchCoordinates = () => {
 		const allPaths = new Array();
-		const sections = route.params.itinerary.sections
+		const sections = JSON.parse(route.params.itinerary.sections);
 
 		for (var i=0; i<sections.length; i++){
 			const section = sections[i];
@@ -48,36 +57,59 @@ const Itinerary = ({navigation, route}) => {
 					stop_points[j] = stop_date_times[j].stop_point.name
 				}
 
-				const currPath = {coords: coords, stop_points: stop_points, color: section.display_informations.color};
+				const currPath = {type: "public_transport", coords: coords, stop_points: stop_points, color: section.display_informations.color};
+				allPaths.push(currPath);
+			}
+
+			else if (section.type === "street_network"){
+				const coords = [];
+				const coordinates = section.geojson.coordinates
+				let index = 0
+				for (var j=0; j<coordinates.length; j+=3){
+					coords[index] = {latitude: parseFloat(coordinates[j][0]), longitude: parseFloat(coordinates[j][1])};
+					index++
+				}
+			
+				const currPath = {type: "street_network", coords: coords}
 				allPaths.push(currPath);
 			}
 		}
 		setPaths(allPaths);
 		setMarkers({
-			departure: allPaths[0].coords[0],
-			arrival: allPaths[allPaths.length-1].coords[allPaths[allPaths.length-1].coords.length-1]
+			departure: {latitude: route.params.itinerary.departure.latitude, longitude: route.params.itinerary.departure.longitude},
+			arrival: {latitude: route.params.itinerary.arrival.latitude, longitude: route.params.itinerary.arrival.longitude}
 		})
 	}
 
 	const toggleFavorite = () => {
-		console.log("ye")
 		if (user && !isFavorite){
 			addFavorite();
 		}
 
 		else if (user && isFavorite){
-			deleteFavorite();
+			Alert.alert(
+				"Supprimer",
+				"Êtes-vous sûr(e) de supprimer l'itinéraire de vos favoris ?",
+				[
+				  {
+					text: "Annuler",
+					style: "cancel"
+				  },
+				  { text: "Oui", onPress: () => deleteFavorite() }
+				],
+				{ cancelable: false }
+			  );
 		}
 
 		else if (!user) {
-			//navigate page de connexion
-			console.log("faut se connecter")
+			//login required to add in favorite
+			navigation.navigate("AccountPage");
 		}
 	}
 
 	// save the new fav itinerary in the database
 	const addFavorite = () => {
-		db.collection("Course")
+		db.collection("Courses")
 		.doc(itinerary.id)
 		.set({
 			departure: itinerary.departure,
@@ -85,11 +117,11 @@ const Itinerary = ({navigation, route}) => {
 			timeOfCourse: itinerary.duration,
 			timeOfDeparture: itinerary.timeOfDeparture,
 			timeOfArrival: itinerary.timeOfArrival,
-			sections: itinerary.sections,
+			sections: JSON.stringify(itinerary.sections),
 			idUser: user.uid
 		})
 		.then((docRef) => {
-			console.log("course added in the db ! id: " + docRef.id)
+			console.log("course added in the db !")
 			setIsFavorite(true);
 		})
 		.catch((error) => {
@@ -98,7 +130,8 @@ const Itinerary = ({navigation, route}) => {
 	}
 
 	const deleteFavorite = () => {
-		db.collection("Course")
+		console.log("delete")
+		db.collection("Courses")
 		.doc(itinerary.id)
 		.delete()
 		.then(() => {
@@ -110,10 +143,18 @@ const Itinerary = ({navigation, route}) => {
 		})
 	}
 
+	const showList = () => {
+		navigation.dispatch(StackActions.pop(1))
+	}
+
 	return (
 		<ScrollView style={styles.container}>
-
-			{paths && markers &&
+			<View style={styles.arrowIcon}>
+				<TouchableOpacity onPress={()=> showList()}>
+					<Ionicons name="arrow-back-circle" size={45} color="#FE596F"/>
+				</TouchableOpacity>
+			</View>
+			{itinerary && paths && markers &&
 			<MapView 
 				style={styles.map}
 				provider={PROVIDER_GOOGLE}
@@ -123,34 +164,50 @@ const Itinerary = ({navigation, route}) => {
 					latitudeDelta: 0.09,
 					longitudeDelta: 0.04
 				}}>
-					{paths.map((path) => 
-					<MapViewDirections
-						origin={path.coords[0]}
-						waypoints={path.coords}
-						destination={path.coords[path.coords.length-1]}
-						apikey={'AIzaSyC7nSp83OyKXsEQ991GVi99QpmrHORt-CY'}
-						strokeColor={"#"+path.color}
-						strokeWidth={4}
-						optimizeWaypoints={true}
-					/>
+					{paths.map((path) => {
+						if (path.type === "street_network") {
+							return (						
+							<MapViewDirections
+								origin={path.coords[0]}
+								waypoints={path.coords}
+								destination={path.coords[path.coords.length-1]}
+								apikey={'AIzaSyC7nSp83OyKXsEQ991GVi99QpmrHORt-CY'}
+								strokeColor={"black"}
+								strokeWidth={4}
+								optimizeWaypoints={true}
+							/>);
+						}
+						else if (path.type === "public_transport") {
+							return (
+							<MapViewDirections
+								origin={path.coords[0]}
+								waypoints={path.coords}
+								destination={path.coords[path.coords.length-1]}
+								apikey={'AIzaSyC7nSp83OyKXsEQ991GVi99QpmrHORt-CY'}
+								strokeColor={"#"+path.color}
+								strokeWidth={4}
+							/>);
+						}
+					}
 					)} 
 					<Marker
 						key={1}
 						coordinate={markers.departure}
-						title={paths[0].stop_points[0]}
+						title={itinerary.departure.name}
 						description={"Départ"}>
 						<Image source={require('../../assets/icon.png')} style={{height: 45, width: 35 }} />
 					</Marker>
 					<Marker
 						key={2}
 						coordinate={markers.arrival}
-						title={paths[paths.length-1].stop_points[paths[paths.length-1].stop_points.length-1]}
+						title={itinerary.arrival.name}
 						description={"Arrivée"}>
 						<Image source={require('../../assets/map/pin.png')} style={{height: 27, width: 27 }} />
 					</Marker>
 			</MapView>
 			}
 			
+			{itinerary &&
 			<View style={styles.detailsView}>
 				<View style={styles.favIcon}>
 					<TouchableOpacity onPress={() => toggleFavorite()}>
@@ -198,8 +255,7 @@ const Itinerary = ({navigation, route}) => {
 										</View>
 									</View>       
 								)
-							}
-							
+							}						
 						})}
 
 					</View>
@@ -317,6 +373,7 @@ const Itinerary = ({navigation, route}) => {
 				
 			})}
 		</View>
+		}
 	</ScrollView>
 	);
 }
@@ -427,6 +484,13 @@ const styles = StyleSheet.create({
 	map: {
         width: Dimensions.get('window').width,
         height: Dimensions.get('window').height*50/100,
+    },
+	arrowIcon:{
+        position:'absolute',
+        display:"flex",
+        top: 60,
+        left: 15,
+		zIndex:100
     },
 })
 
