@@ -378,7 +378,6 @@ const TrafficFilters = ({ navigation }) => {
                         keyExtractor={(item) => item.id}
                         onRefresh={onRefresh}
                         refreshing={isFetching}
-                        ListEmptyComponent={()=> <Text>Recherche introuvable</Text>}
                     />
                 </SafeAreaView>
                 <View style={{ margin: 20, padding: 30 }}></View>

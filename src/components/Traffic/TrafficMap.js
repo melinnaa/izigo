@@ -15,12 +15,10 @@ const TrafficMap = ({ route, navigation }) => {
     const [lineReports, setLineReports] = useState([]);
     const [disruptions, setDisruptions] = useState([]);
     const [color] = useState("#" + props.color);
+    const [currentPosition,setCurrentPosition] = useState([]);
 
     const formatLines = (item) => {
         return {
-            /*coord: item.coord,
-            id: item.id,
-            label: item.label*/
             sections: item.sections,
             departure_date_time: item.departure_date_time,
             arrival_date_time: item.arrival_date_time,
@@ -33,6 +31,14 @@ const TrafficMap = ({ route, navigation }) => {
             pt_objects: item.pt_objects,
             id: item.line.id
         }
+    }
+
+    const formatPosition = (item) =>{
+        return{
+            latitude:item.stop_point.coord.lat,
+            longitude:item.stop_point.coord.lon,
+        }
+        
     }
 
     const fetchData = async () => {
@@ -56,6 +62,21 @@ const TrafficMap = ({ route, navigation }) => {
                     'Authorization': `7a9c06ed-e0b6-4bc3-a7da-f27d4cbee972`,
                 }
             })
+            return resp
+
+        } catch (err) {
+            console.log(err.response);
+        }
+    }
+
+    const fetchPosition = async() => {
+        try {
+            const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/lines/"+props.id+"/departures?data_freshness=realtime&count=1&", {
+                headers: {
+                    'Authorization': `7a9c06ed-e0b6-4bc3-a7da-f27d4cbee972`,
+                }
+            })
+
             return resp
 
         } catch (err) {
@@ -114,6 +135,29 @@ const TrafficMap = ({ route, navigation }) => {
         })
     }
 
+    const showPosition = () =>{
+        console.log("showing")
+        const data = fetchPosition();
+        Promise.resolve(data).then((response) => {
+            const position = new Array;
+            const pos = response.data.departures;
+
+            for (var i = 0; i < pos.length; i++) {
+                position.push(formatPosition(pos[i]));
+            }
+
+            var actualPos = [];
+
+            position.forEach((d) => {
+                //console.log(d);
+                var dataPos = {latitude:d.stop_point.coord.lat,longitude:d.stop_point.coord.lon};
+                actualPos = [...actualPos,dataPos];
+               
+            })
+            setCurrentPosition([...currentPosition,actualPos])
+        })
+    }
+
     const createPolyline = () => {
         let latLong = [];
         coords.map(({ latitude, longitude }) => {
@@ -135,18 +179,22 @@ const TrafficMap = ({ route, navigation }) => {
                 }
             })
         })
+        console.log(pert);
         setDisruptions(pert);
     }
 
     useEffect(() => {
         const timeout = setTimeout(showResults, 1000);
-        //showDisruptions();
-        //takeReports();
+        showDisruptions();
+        takeReports();
         createPolyline();
+        showPosition();
         return () => {
             clearTimeout(timeout);
         };
     }, [coords]);
+
+    console.log(currentPosition);
 
     return (
         <View style={styles.container}>
@@ -215,10 +263,14 @@ const TrafficMap = ({ route, navigation }) => {
                                             <Text style={styles.timeText}>A: {arrival_time.substr(-6).substr(0, 2) + ":" + arrival_time.substr(-6).substr(2, 2)}</Text>
                                         </View>
                                     </View>
-                                    <View style={styles.reportsContainer}>
-                                       <Text style={styles.reportsText}>perturbation(s)</Text>
-                                    </View>
-
+                                    { 
+                                        disruptions.map(({pert}) => {
+                                            <View style={styles.reportsContainer}>
+                                                <Text style={styles.reportsText}>{pert}</Text>
+                                            </View>
+                                        })
+                                    }
+                                    
                                 </View>
                             </Callout>
                         </Marker>
@@ -249,7 +301,7 @@ const styles = StyleSheet.create({
     title: {
         color: "#ffffff",
         fontSize: 18,
-        //fontFamily:"Nunito",
+        //fontFamily:"NunitoBold",
         //fontWeight:"bold",
         textAlign: "center",
         padding: 5
@@ -297,7 +349,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center'
     },
     calloutText: {
-        color: '#000000',
+        color: 'black',
         fontFamily: 'NunitoBold',
         fontSize: 13
     },
@@ -316,7 +368,8 @@ const styles = StyleSheet.create({
     },
     reportsText: {
         fontSize: 16,
-        fontFamily: 'NunitoBold'
+        fontFamily: 'NunitoBold',
+        color:'black'
     },
     goBack: {
         paddingVertical: 10,
