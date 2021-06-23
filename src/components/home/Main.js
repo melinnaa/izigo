@@ -1,5 +1,6 @@
 import React from 'react';
 import MapView from 'react-native-maps';
+import { StackActions } from '@react-navigation/native';
 import { StyleSheet, Text, TextInput, View, Dimensions} from 'react-native';
 import Ionicons from "react-native-vector-icons/Ionicons";
 

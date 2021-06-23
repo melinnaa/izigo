@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, Button, FlatList } from 'react-native';
+import { StackActions } from '@react-navigation/native';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, Button, FlatList, Alert } from 'react-native';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import axios from 'axios';
 import MapView, { Marker } from 'react-native-maps';
@@ -7,11 +8,14 @@ import * as Location from 'expo-location';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
 const Search = ({navigation}) => {
+
     const [isShowingResults, setIsShowingResults] = useState(false)
-    const [location, setLocation] = useState(null);
+    const [departureIsCurrent, setDepartureIsCurrent] = useState(false);
+    const [arrivalIsCurrent, setArrivalIsCurrent] = useState(false);
     const [errorMsg, setErrorMsg] = useState(null);
 
     const [departure, setDeparture] = useState({
+        name: "",
         latitude: 48.8534,
         longitude: 2.3488,
         latitudeDelta: 0.09,
@@ -19,33 +23,18 @@ const Search = ({navigation}) => {
     });
 
     const [arrival, setArrival] = useState({
+        name: "",
         latitude: 48.8534,
         longitude: 2.3488,
         latitudeDelta: 0.09,
         longitudeDelta: 0.04
     });
 
-    const [itinerary, setItinerary] = useState({
-        //id
-        //durée: "duration"
-        //les différentes parties du parcours (metro, marche, etc): sections
-        //heure de départ: "departure_date_time"
-        //heure d'arrivée: "arrival_date_time"
-    })
-
     const [itineraries, setItineraries] = useState({
         //
     })
 
-    let text = 'Waiting..';
-    if (errorMsg) {
-        text = errorMsg;
-    } else if (location) {
-        text = JSON.stringify(location);
-    }
-
-    const getCurrentPosition = () => {
-        (async () => {
+    const getCurrentPosition = async (field) => {
         let { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
             setErrorMsg('Permission to access location was denied');
@@ -53,21 +42,91 @@ const Search = ({navigation}) => {
         }
 
         let location = await Location.getCurrentPositionAsync({});
-        setLocation(location);
-        })();
+
+        Promise.resolve(getAddress([location.coords.latitude, location.coords.longitude]))
+        .then((resp) => {
+            const address = resp.data.results[0].formatted_address;
+            if (field == "departure") {
+                setDeparture ({
+                    name: resp.data.results[0].formatted_address,
+                    latitude: location.coords.latitude,
+                    longitude: location.coords.longitude,
+                    latitudeDelta: 0.09,
+                    longitudeDelta: 0.04
+                });
+                setDepartureIsCurrent(true)
+            }
+            else if (field == "arrival") {
+                setArrival ({
+                    name: resp.data.results[0].formatted_address,
+                    latitude: location.coords.latitude,
+                    longitude: location.coords.longitude,
+                    latitudeDelta: 0.09,
+                    longitudeDelta: 0.04
+                });
+                setArrivalIsCurrent(true)
+            }
+        })
+    }
+
+    const getAddress = async(coords) => {
+        try {
+            const resp = await axios.get('https://maps.googleapis.com/maps/api/geocode/json?latlng='+coords[0]+','+coords[1]+'&key=AIzaSyC7nSp83OyKXsEQ991GVi99QpmrHORt-CY')
+            return resp
+
+        } catch (err) {
+            console.log(err.response);
+            
+        }
+    }
+
+    const removeCurrentPosition = (field) => {
+        if (field == "departure"){
+            setDeparture ({
+                name: "",
+                latitude: 48.8534,
+                longitude: 2.3488,
+                latitudeDelta: 0.09,
+                longitudeDelta: 0.04
+            });
+            setDepartureIsCurrent(false)
+        }
+        else if (field == "arrival"){
+            setArrival ({
+                name: "",
+                latitude: 48.8534,
+                longitude: 2.3488,
+                latitudeDelta: 0.09,
+                longitudeDelta: 0.04
+            });
+            setArrivalIsCurrent(false)
+        }
     }
 
     const showResults = ()=> {
-        const data = fetchData();
-        Promise.resolve(data).then((response)=>{
-            const itineraries = new Array;
-            const journeys = response.data.journeys
-            for (var i=0; i<journeys.length; i++){
-                itineraries.push(formatItinerary(journeys[i]));
-            }
-            setItineraries(itineraries);
-            setIsShowingResults(true);
-        })
+        if (!arrival.name || !departure.name){
+            Alert.alert(
+				"Remplir tous les champs",
+				"Veuillez remplir tous les champs",
+				[
+				  {
+					text: "OK"
+				  }
+				]
+			);
+        }
+        else {
+            const data = fetchData();
+            Promise.resolve(data).then((response)=>{
+                const itineraries = new Array;
+                const journeys = response.data.journeys
+                for (var i=0; i<journeys.length; i++){
+                    itineraries.push(formatItinerary(journeys[i]));
+                }
+                setItineraries(itineraries);
+                setIsShowingResults(true);
+            })
+        }
     }
 
     const fetchData = async() => {
@@ -81,21 +140,44 @@ const Search = ({navigation}) => {
 
         } catch (err) {
             console.log(err.response);
+            Alert.alert(
+				"Pas d'itinéraire",
+				"Aucun itinéraire n'a été trouvé",
+				[
+				  {
+					text: "OK"
+				  }
+				]
+			);
         }
     }
 
     const formatItinerary = (itinerary) => {
+
         return {
             id: guidGenerator(),
-            duration: itinerary.duration,
+            departure: departure,
+            arrival: arrival,
+            duration: Math.round(itinerary.duration/60), //in minutes
             sections: itinerary.sections,
-            departure_date_time: itinerary.departure_date_time,
-            arrival_date_time: itinerary.arrival_date_time
+            timeOfDeparture: getHoursMinutes(itinerary.departure_date_time), //format: HH:MM
+            timeOfArrival: getHoursMinutes(itinerary.arrival_date_time), //format: HH:MM
         }
     }
 
+    //convert YYYYMMDDTHHMMSS to HH:MM
+    const getHoursMinutes = (dateTime) => {
+        return dateTime.substr(-6).substr(0, 2) + ":" + dateTime.substr(-6).substr(2, 2);
+    }
+
     const showItinerary = (itinerary) => {
-        navigation.navigate("Itinerary", {itinerary: itinerary});
+        var itineraryCopy = {};
+        for (var elmt in itinerary){
+            itineraryCopy[elmt] = itinerary[elmt];
+        }
+        itineraryCopy.sections = JSON.stringify(itinerary.sections)
+        
+        navigation.dispatch(StackActions.push('Itinerary', {itinerary: itineraryCopy}))
     }
 
     const guidGenerator = () => {
@@ -112,99 +194,141 @@ const Search = ({navigation}) => {
                     <Ionicons name="close" size={28} color="white" onPress={()=> navigation.navigate("Main")}/>
                 </View>
                 <Text style={styles.title}>Où allons-nous ?</Text>
-                <GooglePlacesAutocomplete
-                    placeholder='Départ'
-                    fetchDetails = {true}
-                    onPress={(data, details = null) => {
-                        setDeparture({
-                            latitude: details.geometry.location.lat,
-                            longitude: details.geometry.location.lng,
-                            latitudeDelta: 0.09,
-                            longitudeDelta: 0.04
-                        })
-                    }}
-                    GooglePlacesSearchQuery={{
-                        rankby: "distance"
-                    }}
+                
+                    {departureIsCurrent == true &&
+                    <View style={styles.inputContainer}>
+                        <TouchableOpacity style={styles.locationIcon} onPress={()=> removeCurrentPosition("departure")}>
+                            <Ionicons name="locate" size={28} color="black"/> 
+                        </TouchableOpacity>
+                        <View style={styles.currentLocationText}>
+                            <Text> {departure.name} </Text>
+                        </View>
+                    </View>
+                    }
+                    {departureIsCurrent == false &&
+                    <View style={styles.inputContainer}>
+                        <TouchableOpacity style={styles.locationIcon} onPress={()=> getCurrentPosition("departure")}>
+                            <Ionicons name="locate-outline" size={28} color="white"/> 
+                        </TouchableOpacity>
+                        <GooglePlacesAutocomplete
+                            placeholder='Départ'
+                            fetchDetails = {true}
+                            onPress={(data, details = null) => {
+                                setDeparture({
+                                    name: details.address_components[0].short_name +" "+ details.address_components[1].short_name,
+                                    latitude: details.geometry.location.lat,
+                                    longitude: details.geometry.location.lng,
+                                    latitudeDelta: 0.09,
+                                    longitudeDelta: 0.04
+                                })
+                            }}
+                            GooglePlacesSearchQuery={{
+                                rankby: "distance"
+                            }}
 
-                    query={{
-                        key: 'AIzaSyC7nSp83OyKXsEQ991GVi99QpmrHORt-CY',
-                        language: 'fr',
-                        components: 'country:fr',
-                        location: `${48.8534}, ${2.3488}`,
-                        radius: 60000
+                            query={{
+                                key: 'AIzaSyC7nSp83OyKXsEQ991GVi99QpmrHORt-CY',
+                                language: 'fr',
+                                components: 'country:fr',
+                                location: '48.8534, 2.3488',
+                                radius: '60000',
+                                strictbounds: true,
 
-                    }}
-                    styles={{
-                        container: {
-                            flex: 0,
-                            width: '90%',
-                            alignSelf: 'center',
-                            marginBottom: 10,
-                            marginTop: 10
-                        },
-                        textInput: {
-                            borderRadius:30,
-                            paddingTop:10,
-                            paddingBottom:10,
-                            paddingLeft:20,
-                            paddingRight:0,
-                            width: 370,
-                            height: 50,
-                        },
-                        listView: {
-                            borderRadius: 20
-                        }
-                    }}
-                />
-                <GooglePlacesAutocomplete
-                    placeholder='Destination'
-                    fetchDetails = {true}
-                    onPress={(data, details = null) => {
-                        setArrival({
-                            latitude: details.geometry.location.lat,
-                            longitude: details.geometry.location.lng,
-                            latitudeDelta: 0.09,
-                            longitudeDelta: 0.04
-                        })
-                    }}
-                    GooglePlacesSearchQuery={{
-                        rankby: "distance"
-                    }}
+                            }}
+                            styles={{
+                                container: {
+                                    flex: 0,
+                                    width: '80%',
+                                    alignSelf: 'center',
+                                    marginBottom: 10,
+                                    marginTop: 10
+                                },
+                                textInput: {
+                                    borderRadius:30,
+                                    paddingTop:10,
+                                    paddingBottom:10,
+                                    paddingLeft:20,
+                                    paddingRight:0,
+                                    width: 370,
+                                    height: 50,
+                                },
+                                listView: {
+                                    borderRadius: 20
+                                }
+                            }}
+                            nearbyPlacesAPI='GooglePlacesSearch'
+                        />
+                    </View>
+                    }
+                    {arrivalIsCurrent == true &&
+                    <View style={[styles.inputContainer, {marginHorizontal: 20}]}>
+                        <TouchableOpacity style={styles.locationIcon} onPress={()=> removeCurrentPosition("arrival")}>
+                            <Ionicons name="locate" size={28} color="black"/> 
+                        </TouchableOpacity>
+                        <View style={styles.currentLocationText}>
+                            <Text> {arrival.name} </Text>
+                        </View>
+                    </View>
+                    }
+                    {arrivalIsCurrent == false &&
+                    <View style={styles.inputContainer}>
+                        <TouchableOpacity style={styles.locationIcon} onPress={()=> getCurrentPosition("arrival")}>
+                            <Ionicons name="locate-outline" size={28} color="white"/> 
+                        </TouchableOpacity>
+                        <GooglePlacesAutocomplete
+                            placeholder='Destination'
+                            fetchDetails = {true}
+                            onPress={(data, details = null) => {
+                                setArrival({
+                                    name: details.address_components[0].short_name +" "+ details.address_components[1].short_name,
+                                    latitude: details.geometry.location.lat,
+                                    longitude: details.geometry.location.lng,
+                                    latitudeDelta: 0.09,
+                                    longitudeDelta: 0.04
+                                })
+                            }}
+                            GooglePlacesSearchQuery={{
+                                rankby: "distance"
+                            }}
 
-                    query={{
-                        key: 'AIzaSyC7nSp83OyKXsEQ991GVi99QpmrHORt-CY',
-                        language: 'fr',
-                        components: 'country:fr',
-                        location: `${48.8534}, ${2.3488}`,
-                        radius: 60000
+                            query={{
+                                key: 'AIzaSyC7nSp83OyKXsEQ991GVi99QpmrHORt-CY',
+                                language: 'fr',
+                                components: 'country:fr',
+                                location: '48.8534, 2.3488',
+                                radius: '60000',
+                                strictbounds: true,
 
-                    }}
-                    styles={{
-                        container: {
-                            flex: 0,
-                            width: '90%',
-                            alignSelf: 'center',
-                        },
-                        textInput: {
-                            borderRadius:30,
-                            paddingTop:10,
-                            paddingBottom:10,
-                            paddingLeft:20,
-                            paddingRight:0,
-                            width: 370,
-                            height: 50,
-                        },
-                        listView: {
-                            borderRadius: 20
-                        }
-                    }}
-                />
-                <View style={styles.submitBtn}>
-                    <TouchableOpacity onPress={() => showResults()}>
-                        <Text>Go</Text>
-                    </TouchableOpacity>
-                </View>
+                            }}
+                            styles={{
+                                container: {
+                                    flex: 0,
+                                    width: '80%',
+                                    alignSelf: 'center',
+                                },
+                                textInput: {
+                                    borderRadius:30,
+                                    paddingTop:10,
+                                    paddingBottom:10,
+                                    paddingLeft:20,
+                                    paddingRight:0,
+                                    width: 370,
+                                    height: 50,
+                                },
+                                listView: {
+                                    borderRadius: 20
+                                }
+                            }}
+                        />
+                    </View>
+                    }
+                    <View>
+                        <TouchableOpacity onPress={() => showResults()}>
+                            <View style={styles.submitBtn}>
+                                <Text>Go</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
         
             </View>
             {isShowingResults === false &&
@@ -219,7 +343,7 @@ const Search = ({navigation}) => {
                 }}
             />
             }
-            {isShowingResults === true &&
+            {isShowingResults === true && 
             <FlatList
             data={itineraries}
             renderItem={({item}) => 
@@ -274,7 +398,7 @@ const Search = ({navigation}) => {
                     
                         <View style={styles.duration}>
                             <Text style={styles.duration_number}>
-                                {Math.round(item.duration/60)}
+                                {Math.round(item.duration)}
                             </Text>
                             <Text style={styles.duration_text}>
                                 min
@@ -314,17 +438,15 @@ const styles = StyleSheet.create({
         padding:5
     },
     inputContainer:{
-        flex:1,
         flexDirection:"row",
-        justifyContent:"center",
-        alignItems:"center",
-        margin:35,
-        zIndex: 10
+        justifyContent: "center",
+        alignItems: "center"
     },
-    input:{
+
+    currentLocationText:{
         flex:1,
-        borderRadius:30,
-        paddingTop:10,
+        borderRadius:50,
+        paddingTop:15,
         paddingBottom:10,
         paddingLeft:20,
         paddingRight:0,
@@ -332,15 +454,19 @@ const styles = StyleSheet.create({
         height: 50,
         backgroundColor:"white",
         color:"#000000",
-        display:"flex",
-        alignItems:"center",
-        position: "absolute",
-        //fontFamily:"Nunito-Bold"
+        alignItems:"flex-start",
+        marginTop: 10,
+        marginBottom: 15
     },
+    
     icon:{
         position:'absolute',
         display:"flex",
         right:5
+    },
+
+    locationIcon: {
+        marginRight: 5
     },
 
     closeIcon:{
@@ -356,6 +482,16 @@ const styles = StyleSheet.create({
     },
     submitBtn: {
         backgroundColor: 'white',
+        width: 50,
+        padding: 10,
+        borderRadius: 50,
+        alignSelf: 'center',
+        marginTop: 10,
+        alignItems: 'center'
+    },
+    
+    submitBtnDisabled: {
+        backgroundColor: 'lightgrey',
         width: 50,
         padding: 10,
         borderRadius: 50,
