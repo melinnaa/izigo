@@ -67,7 +67,6 @@ const FavoriteList = ({ navigation }) => {
 
     }
 
-    }
 
     return (
         <View style={styles.container}>
