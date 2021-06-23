@@ -1,26 +1,16 @@
 import React, { useEffect, useState } from "react"
-import { StyleSheet, View, Text, TouchableHighlight, Linking, Image, FlatList } from 'react-native';
+import { StyleSheet, View, Text, TouchableHighlight, Linking, Image, FlatList, Button } from 'react-native';
 import axios from "axios";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 const InfoTwitter = ({ navigation, route }) => {
-    const [idTransport, setidTransport] = useState([]);
-    const [dataTransport, setdataTransport] = useState([]);
-    const [ImageTransport, setImageTransport] = useState([]);
+    const [idTransport, setidTransport] = useState();
+    const [dataTransport, setdataTransport] = useState();
+    const [ImageTransport, setImageTransport] = useState();
 
     const title = route.params;
-    const [refreshing, setRefreshing] = React.useState(false);
-
-    const wait = (timeout) => {
-        return new Promise(resolve => setTimeout(resolve, timeout));
-    }
-
-    const refreshPage = React.useCallback(() => {
-        setRefreshing(true);
-        wait(2000).then(() => setRefreshing(false));
-    }, []);
  
-    const getImageTransport = async () => {
+    const getImageTransport = async (idTransport) => {
         try {
             const resp = await axios.get(`https://api.twitter.com/1.1/users/show.json?user_id=${idTransport}`, {
                 headers: {
@@ -30,13 +20,13 @@ const InfoTwitter = ({ navigation, route }) => {
                     "Content-Type": "application/json"
                 }
             })
-            return resp;
+            return resp.data.profile_image_url;
         } catch (err) {
             console.log(err);
         }
     };
 
-    const getDataTransport = async () => {
+    const getDataTransport = async (idTransport) => {
         try {
             const resp = await axios.get("https://api.twitter.com/2/users/" + idTransport + "/tweets?tweet.fields=context_annotations", {
                 headers: {
@@ -46,7 +36,7 @@ const InfoTwitter = ({ navigation, route }) => {
                     "Content-Type": "application/json"
                 }
             })
-            return resp;
+            return resp.data.data;
 
         } catch (err) {
             console.log(err);
@@ -63,7 +53,7 @@ const InfoTwitter = ({ navigation, route }) => {
                     "Content-Type": "application/json"
                 }
             })
-            return resp;
+            return resp.data.data.id;
 
         } catch (err) {
             console.log(err);
@@ -71,34 +61,31 @@ const InfoTwitter = ({ navigation, route }) => {
     };
 
     useEffect(() => {
-        fetchImageTransport();
-        fetchIdTransport();
-        fetchDataTransport();
+        if (!dataTransport){
+            fetchAllData();
+        }
+        
     }, []);
 
-    const fetchImageTransport = () => {
-        const data = getImageTransport();
-        Promise.resolve(data).then((response) => {
-            setImageTransport(response.data.profile_image_url);
-        })
-    }
-
-    const fetchIdTransport = () => {
-        const data = getTransportId();
-        Promise.resolve(data).then((response) => {
-            setidTransport(response.data.data.id);
-        })
-    }
-
-    const fetchDataTransport = () => {
-        const data = getDataTransport();
-        Promise.resolve(data).then((response) => {
-            const mydata = response.data.data;
-            const tab = [];
-            for (var i = 0; i < 3; i++) {
-                tab.push(mydata[i].text)
-            }
-            setdataTransport(tab);
+    const fetchAllData = () => {
+        //get transport id 
+        const data1 = getTransportId();
+        Promise.resolve(data1).then((id) => {
+            setidTransport(id);
+            //get image url of the transport 
+            const data2 = getImageTransport(id);
+            Promise.resolve(data2).then((image_url) => {
+                setImageTransport(image_url);
+                //get all data of the transport
+                const data3 = getDataTransport(id);
+                Promise.resolve(data3).then((mydata) => {    
+                    const tab = [];
+                    for (var i = 0; i < 3; i++) {
+                        tab.push(mydata[i].text)
+                    }
+                    setdataTransport(tab);
+                })
+            })
         })
     }
     return (
@@ -115,7 +102,7 @@ const InfoTwitter = ({ navigation, route }) => {
                 name={'refresh'} size={35}
                 title=""
                 style={styles.refreshButton}
-                onPress={refreshPage}
+                //onPress={refreshPage}
             />
             <Text style={styles.title}>Info Traffic</Text>
             <Image
