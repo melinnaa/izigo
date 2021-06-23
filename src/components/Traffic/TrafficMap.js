@@ -1,24 +1,28 @@
-import React, { useState, useEffect } from "react";
-import { Text, View, Dimensions, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import React, { useState, useEffect, useRef } from "react";
+import { Text, View, Dimensions, StyleSheet, TouchableOpacity, TextInput, ScrollView, Modal } from 'react-native';
 import MapView, { Marker, Polyline, Callout } from 'react-native-maps';
 import axios from 'axios';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { FlatList } from "react-native-gesture-handler";
+import { Modalize } from 'react-native-modalize';
+
 
 
 const TrafficMap = ({ route, navigation }) => {
     const { props } = route.params;
 
+    const modalizeRef = useRef(null);
+
     const [line, setLine] = useState(route.params.line);
     const [station, setStation] = useState("");
     const [coords, setCoords] = useState([]);
     const [linePoints, setLinePoints] = useState([]);
-    const [lineReports, setLineReports] = useState([]);
     const [disruptions, setDisruptions] = useState([]);
     const [color] = useState("#" + props.color);
-    const [currentLatitude,setCurrentLatitude] = useState(0);
-    const [currentLongitude,setCurrentLongitude] = useState(0);
-    const [directionCurrentPosition,setDirectionCurrentPosition] = useState("");
+    const [currentPosition, setCurrentPosition] = useState([]);
+    const [currentLatitude, setCurrentLatitude] = useState(0);
+    const [currentLongitude, setCurrentLongitude] = useState(0);
+    const [directionCurrentPosition, setDirectionCurrentPosition] = useState("");
     const serviceStatus = {
         NO_SERVICE: "Aucun service",
         REDUCED_SERVICE: "Service réduit",
@@ -31,12 +35,21 @@ const TrafficMap = ({ route, navigation }) => {
         STOP_MOVED: "Suspendu"
     }
 
+    const onOpen = () => {
+        modalizeRef.current?.open();
+    };
+
+    const onClose = () => {
+        modalizeRef.current?.close();
+    }
+
     const formatLines = (item) => {
         return {
             sections: item.sections,
             departure_date_time: item.departure_date_time,
             arrival_date_time: item.arrival_date_time,
-            stop_date_times: item.sections[1].stop_date_times
+            stop_date_times: item.sections[1].stop_date_times,
+            nb_transferts: item.nb_transfers
         }
     }
 
@@ -47,17 +60,17 @@ const TrafficMap = ({ route, navigation }) => {
         }
     }
 
-    const formatPosition = (item) =>{
-        return{
-            latitude:item.stop_point.coord.lat,
-            longitude:item.stop_point.coord.lon,
-            direction:route.direction.name
+    const formatPosition = (item) => {
+        return {
+            latitude: item.stop_point.coord.lat,
+            longitude: item.stop_point.coord.lon,
+            direction: item.route.direction.stop_area.name
         }
     }
 
     const fetchData = async () => {
         try {
-            const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/journeys?from=" + props.fromLon + ";" + props.fromLat + "&to=" + props.toLon + ";" + props.toLat + "&", {
+            const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/journeys?from=" + props.fromLon + ";" + props.fromLat + "&to=" + props.toLon + ";" + props.toLat + "&max_nb_transfers=0&", {
                 headers: {
                     'Authorization': `7a9c06ed-e0b6-4bc3-a7da-f27d4cbee972`,
                 }
@@ -97,9 +110,9 @@ const TrafficMap = ({ route, navigation }) => {
         }
     }
 
-    const fetchPosition = async() => {
+    const fetchPosition = async () => {
         try {
-            const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/lines/"+props.id+"/departures?data_freshness=realtime&count=1&", {
+            const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/lines/" + props.id + "/departures?data_freshness=realtime&", {
                 headers: {
                     'Authorization': `7a9c06ed-e0b6-4bc3-a7da-f27d4cbee972`,
                 }
@@ -125,10 +138,13 @@ const TrafficMap = ({ route, navigation }) => {
 
             var coordinates = [];
             line.forEach((d) => {
+                console.log(d);
+                //if(d.nb_transfers==0){
                 for (i = 0; i < d.stop_date_times.length; i++) {
-                    var coord = { latitude: parseFloat(d.stop_date_times[i].stop_point.coord.lat), longitude: parseFloat(d.stop_date_times[i].stop_point.coord.lon), name: d.stop_date_times[i].stop_point.name, departure_time: d.stop_date_times[i].departure_date_time, arrival_time: d.stop_date_times[i].arrival_date_time }
+                    var coord = { latitude: parseFloat(d.stop_date_times[i].stop_point.coord.lat), longitude: parseFloat(d.stop_date_times[i].stop_point.coord.lon), name: d.stop_date_times[i].stop_point.name, departure_time: d.stop_date_times[i].departure_date_time, arrival_time: d.stop_date_times[i].arrival_date_time, nb_transfers: d.nb_transferts }
                     coordinates = [...coordinates, coord];
                 }
+                //}
             })
             setCoords(coordinates);
         })
@@ -139,7 +155,7 @@ const TrafficMap = ({ route, navigation }) => {
 
     const showDisruptions = () => {
         const data = fetchDisruptions();
-        
+
         Promise.resolve(data).then((response) => {
             const disruptions = new Array;
             for (var i = 0; i < response.length; i++) {
@@ -149,7 +165,7 @@ const TrafficMap = ({ route, navigation }) => {
         })
     }
 
-    const showPosition = () =>{
+    const showPosition = () => {
         console.log("showing")
         const data = fetchPosition();
         Promise.resolve(data).then((response) => {
@@ -161,17 +177,17 @@ const TrafficMap = ({ route, navigation }) => {
             }
 
             position.forEach((d) => {
+                //console.log(d);
+                setCurrentPosition([...currentPosition, { latitude: parseFloat(d.latitude), longitude: parseFloat(d.longitude), direction: d.direction }])
                 setCurrentLatitude(parseFloat(d.latitude));
                 setCurrentLongitude(parseFloat(d.longitude));
                 setDirectionCurrentPosition(d.direction);
-               
+
             })
-            
-            
+
+
         })
     }
-
-    console.log(disruptions)
 
     const createPolyline = () => {
         let latLong = [];
@@ -182,43 +198,32 @@ const TrafficMap = ({ route, navigation }) => {
         setLinePoints(latLong);
     }
 
-    /*const takeReports = () => {
-        var pert = [];
-        if(!lineReports.length){
-            pert = [...pert, { pert: '0 perturbation' }];
-        }
-        else{
-            coords.map(({ name }) => {
-                lineReports.map(({ report }) => {
-                    if (name == report) {
-                        pert = [...pert, { pert: '1 perturbation' }]
-                    }
-                    else {
-                        pert = [...pert, { pert: '0 perturbation' }];
-                    }
-                })
-            })
-        }
-        //console.log(pert);
-        setDisruptions(pert);
-    }*/
+    const renderItem = ({item}) => {
+        return <View style={[{ paddingLeft: 10, paddingTop: 5 }]}>
+            <Text style={styles.reportsText}>{serviceStatus[item.severity.effect]}</Text>
+            <Text style={styles.reportDetails}>{item.messages[0].text}</Text>
+        </View>
+    }
 
     useEffect(() => {
         const timeout = setTimeout(showResults, 5000);
         showDisruptions();
-        //takeReports();
         createPolyline();
         showPosition();
-        
+
         return () => {
             clearTimeout(timeout);
         };
     }, [coords]);
 
+    const getData = () => {
+        return disruptions;
+    }
+    
     return (
         <View style={styles.container}>
             <View style={styles.inputsBoxContainer}>
-                <TouchableOpacity onPress={()=> navigation.goBack()}>
+                <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Ionicons name="arrow-back-outline" size={25} color="white" />
                 </TouchableOpacity>
                 <Text style={styles.title}>Voir le traffic</Text>
@@ -246,6 +251,9 @@ const TrafficMap = ({ route, navigation }) => {
                         <Ionicons name="search-outline" size={15} color="#959595" />
                     </View>
                 </View>
+                <TouchableOpacity>
+                    <Ionicons name="information-circle-outline" size={20} color="white" />
+                </TouchableOpacity>
             </View>
             <MapView
                 style={styles.map}
@@ -281,7 +289,7 @@ const TrafficMap = ({ route, navigation }) => {
                                             <Ionicons name="subway-outline" size={20} color={color} />
                                             <Text style={styles.timeText}>A: {arrival_time.substr(-6).substr(0, 2) + ":" + arrival_time.substr(-6).substr(2, 2)}</Text>
                                         </View>
-                                    </View>                                   
+                                    </View>
                                 </View>
                             </Callout>
                         </Marker>
@@ -292,28 +300,35 @@ const TrafficMap = ({ route, navigation }) => {
                     strokeColor={color} // fallback for when `strokeColors` is not supported by the map-provider
                     strokeWidth={4}
                 />
-                <Marker 
-                    coordinate={{
-                        latitude:currentLatitude,
-                        longitude:currentLongitude
-                    }}
-                    pinColor={color}
-                    title={"Direction: "+ directionCurrentPosition}
-                ></Marker>
-                
+                {
+                    currentPosition.map(({ latitude, longitude, direction }) => {
+                        <Marker
+                            coordinate={{
+                                latitude: latitude,
+                                longitude: longitude
+                            }}
+                            pinColor={color}
+                            title={"Direction: " + direction}
+                        ></Marker>
+                    })
+                }
             </MapView>
-            <View style={styles.infosContainer}>
-                <FlatList
-                    data={disruptions}
-                    renderItem={({ item }) => (
-                        <View style={[{flexDirection:"row", flexWrap:"wrap"}]}>
-                            <Text>{serviceStatus[item.severity.effect]}</Text>
-                            <Text>{item.messages[0].text}</Text>
-                        </View> 
-                )}
-                keyExtractor={(item) => item.id}
-                />
-            </View>
+            <TouchableOpacity style={styles.buttonContainer} onPress={onOpen}>
+                <Text style={styles.buttonText}>Infos de la ligne</Text>
+            </TouchableOpacity>
+            <Modalize
+                ref={modalizeRef}
+                flatListProps={{
+                    data: getData(),
+                    renderItem: renderItem,
+                    keyExtractor: item => item.id,
+                    showsVerticalScrollIndicator: true,
+                }}
+            >
+                <TouchableOpacity style={styles.closeContainer} onPress={onClose}>
+                    <Text style={styles.closeModal}>X</Text>
+                </TouchableOpacity>
+            </Modalize>
         </View>
     )
 }
@@ -368,7 +383,7 @@ const styles = StyleSheet.create({
     },
     map: {
         width: Dimensions.get('window').width,
-        height: Dimensions.get('window').height*45/100,
+        height: Dimensions.get('window').height * 45 / 100,
     },
     calloutContainer: {
         backgroundColor: 'white',
@@ -377,7 +392,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         width: 200,
         height: 100,
-        flexDirection:'column',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center'
     },
@@ -395,6 +410,12 @@ const styles = StyleSheet.create({
         fontFamily: 'NunitoRegular',
         fontSize: 14
     },
+    infosContainer: {
+        paddingBottom: 55,
+        borderRadius: 4,
+        height: 50,
+        flex: 1
+    },
     reportsContainer: {
         paddingVertical: 5,
         flexDirection: 'row'
@@ -402,13 +423,38 @@ const styles = StyleSheet.create({
     reportsText: {
         fontSize: 16,
         fontFamily: 'NunitoBold',
-        color:'black'
+        color: 'black'
+    },
+    reportDetails: {
+        fontSize: 16,
+        fontFamily: 'NunitoLight',
+        color: 'black'
     },
     goBack: {
         paddingVertical: 10,
         paddingHorizontal: 15,
         backgroundColor: "white",
         opacity: 0.4
+    }, 
+    buttonContainer:{
+        justifyContent:'center',
+        alignItems:'center',
+        backgroundColor:"#FE596F",
+        borderRadius:3,
+        width:150,
+        height:60,
+        marginBottom:3
+    },
+    buttonText:{
+        fontSize:18,
+        fontFamily:'NunitoBold'
+    },
+    closeContainer:{
+        justifyContent:"flex-end",
+        alignItems:"flex-start"
+    },
+    closeModal:{
+        color:'lightgrey'
     }
 })
 
