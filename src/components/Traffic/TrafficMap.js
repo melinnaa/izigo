@@ -7,7 +7,6 @@ import { FlatList } from "react-native-gesture-handler";
 import { Modalize } from 'react-native-modalize';
 
 
-
 const TrafficMap = ({ route, navigation }) => {
     const { props } = route.params;
 
@@ -183,7 +182,7 @@ const TrafficMap = ({ route, navigation }) => {
     }
 
     const renderItem = ({item}) => {
-        return <View style={[{ paddingLeft: 10, paddingTop: 5 }]}>
+        return <View style={[{ paddingLeft: 15, marginBottom: 15 }]}>
             <Text style={styles.reportsText}>{serviceStatus[item.severity.effect]}</Text>
             <Text style={styles.reportDetails}>{item.messages[0].text}</Text>
         </View>
@@ -210,13 +209,13 @@ const TrafficMap = ({ route, navigation }) => {
         <View style={styles.container}>
             <View style={styles.inputsBoxContainer}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Ionicons name="arrow-back-outline" size={25} color="white" />
+                    <Ionicons name="arrow-back-outline" size={35} color="white" />
                 </TouchableOpacity>
                 <View style={{flexDirection:'row',justifyContent:'center', alignItems:'center'}}>
                     <Text style={styles.title}>Trafic ligne {line}</Text>
                 </View>
                 <TouchableOpacity onPress={onOpen}>
-                    <Ionicons name="information-circle-outline" size={30} color="white" />
+                    <Ionicons name="information-circle-outline" size={35} color="white" />
                 </TouchableOpacity>
             </View>
             <MapView
@@ -259,6 +258,12 @@ const TrafficMap = ({ route, navigation }) => {
                         </Marker>
                     )
                 }
+                
+                <Polyline
+                    coordinates={linePoints}
+                    strokeColor={color} // fallback for when `strokeColors` is not supported by the map-provider
+                    strokeWidth={4}
+                />
                 {
                     currentPosition.map(({ latitude, longitude, direction }) => {
                         <Marker
@@ -271,11 +276,6 @@ const TrafficMap = ({ route, navigation }) => {
                         ></Marker>
                     })
                 }
-                <Polyline
-                    coordinates={linePoints}
-                    strokeColor={color} // fallback for when `strokeColors` is not supported by the map-provider
-                    strokeWidth={4}
-                />
             </MapView>
             <Modalize
                 HeaderComponent={
@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
         opacity: 0.4
     }, 
     headerModalContainer:{
-        paddingTop:5, 
+        paddingVertical: 15,
         borderBottomColor:'lightgrey',
         borderBottomWidth:1
     },
@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
         fontFamily:'NunitoBold',
         fontSize:20,
         color:'black',
-        paddingLeft:10
+        paddingLeft:15
     }
 })
 
