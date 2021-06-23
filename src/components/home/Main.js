@@ -41,14 +41,13 @@ const styles = StyleSheet.create({
         flexDirection:"row",
         justifyContent:"center",
         alignItems:"center",
-        margin:35,
         backgroundColor: "#FE596F",
         borderRadius: 20,
-        width: 308,
+        width: 300,
         height: 45,
-        left: 37,
-        top: 51,
-        padding: 9,
+        top: "10%",
+        paddingLeft: 10,
+        marginLeft: "12%",
     },
 
     input: {
