@@ -258,7 +258,7 @@ const TrafficFilters = ({ navigation }) => {
         return (
             <View style={styles.container}>
                 <View style={styles.inputsBoxContainer}>
-                    <Text style={styles.title}>Voir le traffic</Text>
+                    <Text style={styles.title}>Voir le trafic</Text>
                     <View style={styles.inputContainer}>
                         <TextInput
                             style={styles.input}
@@ -304,7 +304,7 @@ const TrafficFilters = ({ navigation }) => {
         return (
             <View style={styles.container}>
                 <View style={styles.inputsBoxContainer}>
-                    <Text style={styles.title}>Voir le traffic</Text>
+                    <Text style={styles.title}>Voir le trafic</Text>
                     <View style={styles.inputContainer}>
                         <TextInput
                             style={styles.input}

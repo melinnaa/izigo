@@ -14,15 +14,11 @@ const TrafficMap = ({ route, navigation }) => {
     const modalizeRef = useRef(null);
 
     const [line, setLine] = useState(route.params.line);
-    const [station, setStation] = useState("");
     const [coords, setCoords] = useState([]);
     const [linePoints, setLinePoints] = useState([]);
     const [disruptions, setDisruptions] = useState([]);
     const [color] = useState("#" + props.color);
     const [currentPosition, setCurrentPosition] = useState([]);
-    const [currentLatitude, setCurrentLatitude] = useState(0);
-    const [currentLongitude, setCurrentLongitude] = useState(0);
-    const [directionCurrentPosition, setDirectionCurrentPosition] = useState("");
     const serviceStatus = {
         NO_SERVICE: "Aucun service",
         REDUCED_SERVICE: "Service réduit",
@@ -38,10 +34,6 @@ const TrafficMap = ({ route, navigation }) => {
     const onOpen = () => {
         modalizeRef.current?.open();
     };
-
-    const onClose = () => {
-        modalizeRef.current?.close();
-    }
 
     const formatLines = (item) => {
         return {
@@ -138,13 +130,10 @@ const TrafficMap = ({ route, navigation }) => {
 
             var coordinates = [];
             line.forEach((d) => {
-                console.log(d);
-                //if(d.nb_transfers==0){
                 for (i = 0; i < d.stop_date_times.length; i++) {
                     var coord = { latitude: parseFloat(d.stop_date_times[i].stop_point.coord.lat), longitude: parseFloat(d.stop_date_times[i].stop_point.coord.lon), name: d.stop_date_times[i].stop_point.name, departure_time: d.stop_date_times[i].departure_date_time, arrival_time: d.stop_date_times[i].arrival_date_time, nb_transfers: d.nb_transferts }
                     coordinates = [...coordinates, coord];
                 }
-                //}
             })
             setCoords(coordinates);
         })
@@ -177,12 +166,7 @@ const TrafficMap = ({ route, navigation }) => {
             }
 
             position.forEach((d) => {
-                //console.log(d);
-                setCurrentPosition([...currentPosition, { latitude: parseFloat(d.latitude), longitude: parseFloat(d.longitude), direction: d.direction }])
-                setCurrentLatitude(parseFloat(d.latitude));
-                setCurrentLongitude(parseFloat(d.longitude));
-                setDirectionCurrentPosition(d.direction);
-
+                setCurrentPosition([...currentPosition, { latitude: parseFloat(d.latitude), longitude: parseFloat(d.longitude), direction: d.direction }]);
             })
 
 
@@ -219,6 +203,8 @@ const TrafficMap = ({ route, navigation }) => {
     const getData = () => {
         return disruptions;
     }
+
+    console.log(currentPosition);
     
     return (
         <View style={styles.container}>
@@ -226,33 +212,11 @@ const TrafficMap = ({ route, navigation }) => {
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Ionicons name="arrow-back-outline" size={25} color="white" />
                 </TouchableOpacity>
-                <Text style={styles.title}>Voir le traffic</Text>
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        style={styles.input}
-                        value={line}
-                        onChangeText={setLine}
-                        placeholder="Ligne"
-                        underlineColorAndroid="transparent"
-                    />
-                    <View style={styles.icon}>
-                        <Ionicons name="search-outline" size={15} color="#959595" />
-                    </View>
+                <View style={{flexDirection:'row',justifyContent:'center', alignItems:'center'}}>
+                    <Text style={styles.title}>Trafic ligne {line}</Text>
                 </View>
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        style={styles.input}
-                        value={station}
-                        onChangeText={setStation}
-                        placeholder="Nom de la station"
-                        underlineColorAndroid="transparent"
-                    />
-                    <View style={styles.icon}>
-                        <Ionicons name="search-outline" size={15} color="#959595" />
-                    </View>
-                </View>
-                <TouchableOpacity>
-                    <Ionicons name="information-circle-outline" size={20} color="white" />
+                <TouchableOpacity onPress={onOpen}>
+                    <Ionicons name="information-circle-outline" size={30} color="white" />
                 </TouchableOpacity>
             </View>
             <MapView
@@ -261,8 +225,8 @@ const TrafficMap = ({ route, navigation }) => {
                 initialRegion={{
                     latitude: 48.8534,
                     longitude: 2.3488,
-                    latitudeDelta: 0.09,
-                    longitudeDelta: 0.04
+                    latitudeDelta: 0.04,
+                    longitudeDelta: 0.02
                 }}
             >
                 {
@@ -295,11 +259,6 @@ const TrafficMap = ({ route, navigation }) => {
                         </Marker>
                     )
                 }
-                <Polyline
-                    coordinates={linePoints}
-                    strokeColor={color} // fallback for when `strokeColors` is not supported by the map-provider
-                    strokeWidth={4}
-                />
                 {
                     currentPosition.map(({ latitude, longitude, direction }) => {
                         <Marker
@@ -312,22 +271,26 @@ const TrafficMap = ({ route, navigation }) => {
                         ></Marker>
                     })
                 }
+                <Polyline
+                    coordinates={linePoints}
+                    strokeColor={color} // fallback for when `strokeColors` is not supported by the map-provider
+                    strokeWidth={4}
+                />
             </MapView>
-            <TouchableOpacity style={styles.buttonContainer} onPress={onOpen}>
-                <Text style={styles.buttonText}>Infos de la ligne</Text>
-            </TouchableOpacity>
             <Modalize
+                HeaderComponent={
+                    <View style={styles.headerModalContainer}>
+                      <Text style={styles.headerModal}>Perturbations</Text>
+                    </View>
+                }
                 ref={modalizeRef}
                 flatListProps={{
                     data: getData(),
                     renderItem: renderItem,
                     keyExtractor: item => item.id,
-                    showsVerticalScrollIndicator: true,
+                    showsVerticalScrollIndicator: false,
                 }}
             >
-                <TouchableOpacity style={styles.closeContainer} onPress={onClose}>
-                    <Text style={styles.closeModal}>X</Text>
-                </TouchableOpacity>
             </Modalize>
         </View>
     )
@@ -341,9 +304,11 @@ const styles = StyleSheet.create({
     },
     inputsBoxContainer: {
         paddingHorizontal: 10,
-        paddingVertical: 30,
+        paddingVertical: 10,
         backgroundColor: "#FE596F",
-        borderRadius: 10
+        borderRadius: 10,
+        flexDirection:'row',
+        justifyContent:'space-between'
     },
     title: {
         color: "#ffffff",
@@ -351,7 +316,7 @@ const styles = StyleSheet.create({
         //fontFamily:"NunitoBold",
         //fontWeight:"bold",
         textAlign: "center",
-        padding: 5
+        padding: 2
     },
     inputContainer: {
         flex: 1,
@@ -383,7 +348,7 @@ const styles = StyleSheet.create({
     },
     map: {
         width: Dimensions.get('window').width,
-        height: Dimensions.get('window').height * 45 / 100,
+        height: Dimensions.get('window').height,
     },
     calloutContainer: {
         backgroundColor: 'white',
@@ -436,25 +401,16 @@ const styles = StyleSheet.create({
         backgroundColor: "white",
         opacity: 0.4
     }, 
-    buttonContainer:{
-        justifyContent:'center',
-        alignItems:'center',
-        backgroundColor:"#FE596F",
-        borderRadius:3,
-        width:150,
-        height:60,
-        marginBottom:3
+    headerModalContainer:{
+        paddingTop:5, 
+        borderBottomColor:'lightgrey',
+        borderBottomWidth:1
     },
-    buttonText:{
-        fontSize:18,
-        fontFamily:'NunitoBold'
-    },
-    closeContainer:{
-        justifyContent:"flex-end",
-        alignItems:"flex-start"
-    },
-    closeModal:{
-        color:'lightgrey'
+    headerModal:{
+        fontFamily:'NunitoBold',
+        fontSize:20,
+        color:'black',
+        paddingLeft:10
     }
 })
 

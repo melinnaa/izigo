@@ -6,6 +6,15 @@ All the files are inside this base component.
 *assets/*
 Just as the name implies, this houses static files (e.g images) used in the application.
 
+*assets/fonts*
+To put the fonts you want to use in your project
+
+*assets/img*
+All the images used in the application
+
+*firebase/*
+Folder to configure firebase 
+
 *redux/*
 This holds all the redux files if you are using react-redux for managing state. Inside redux folder you have actions, reducers, store which can easily manage your redux files
 
@@ -33,3 +42,6 @@ If you have global styles defined in your project you can put it over here like 
 - course
 - transport
 - courseTransport
+
+**Pages description**
+
