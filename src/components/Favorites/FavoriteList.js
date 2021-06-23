@@ -64,7 +64,6 @@ const FavoriteList = ({ navigation }) => {
             alert("Erreur")
         }
         navigation.navigate('Login');
-
     }
 
 

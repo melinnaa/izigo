@@ -1,11 +1,11 @@
-import React, {useState} from "react";
-import { StyleSheet, Text, View, TouchableOpacity, FlatList } from 'react-native';
+import React, { useState } from "react";
+import { StyleSheet, Text, View, TouchableOpacity, FlatList, Image } from 'react-native';
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 const FavoriteDetails = ({ route, navigation }) => {
     const { props } = route.params;
-    const [transportName,setTransportName] = useState("");
-    console.log(props.sections);
+    const [transportName, setTransportName] = useState("");
+    //cconsole.log(props.sections); 
     return (
         <View style={styles.container}>
             <View style={styles.titleContainer}>
@@ -30,14 +30,29 @@ const FavoriteDetails = ({ route, navigation }) => {
                 <Text></Text>
             </View>
 
-            { 
+            {
                 JSON.parse(props.sections).map((section) =>
                     <View style={styles.connectionContainer}>
-                        <Text style={styles.lineText}>{section.arrival_date_time}</Text>
+                        <Text>
+                            {section.display_informations && section.display_informations.commercial_mode == "RER" ? <Image source={{ uri: 'https://github.com/melinnaa/izigo/blob/main/src/assets/img/transports/rer/RER' + section.display_informations.label + '.png?raw=true' }} style={{ width: 20, height: 20, alignSelf: 'baseline', }} /> : " "}
+                            {section.display_informations && section.display_informations.commercial_mode === "Bus" ?
+                                <Text style={[styles.busLabel, styles.transportLabel, { backgroundColor: "#" + section.display_informations.color, color: "#" + section.display_informations.text_color }]}> {section.display_informations.label} </Text>
+                                : " "}
+                            {section.display_informations && section.display_informations.commercial_mode === "Métro" ?
+                                <Image source={{ uri: 'https://github.com/melinnaa/izigo/blob/main/src/assets/img/transports/metro/Metro' + section.display_informations.label + '.png?raw=true' }} style={{ width: 20, height: 20 }} />
+                                : " "}
+                            {section.display_informations && section.display_informations.commercial_mode === "Train" ?
+                                <Text style={[styles.busLabel, styles.transportLabel, { backgroundColor: "#" + section.display_informations.color, color: "#" + section.display_informations.text_color, width: 20, height: 20 }]}> {section.display_informations.label} </Text>
+                                : " "}
+                        </Text>
                         <Text style={styles.connectionsText}>{section.from.name}</Text>
-                        <Text style={styles.connectionsText}> {">"} </Text>
+
+                        <View style={styles.step_separator}>
+                            <Ionicons name="radio-button-on" size={5} color="grey" />
+                        </View>
                         <Text style={styles.connectionsText}>{section.to.name}</Text>
-                    </View> 
+                    </View>
+
 
                 )
             }
@@ -46,6 +61,8 @@ const FavoriteDetails = ({ route, navigation }) => {
                     <Text style={styles.buttonText}>Voir l'itinéraire</Text>
                 </TouchableOpacity>
             </View>
+
+            {/*
             <View style={styles.itemsContainer}>
                 <Ionicons name="people-outline" size={30} color="#000000" />
                 <Text style={styles.itemsText}>Affluence</Text>
@@ -56,6 +73,7 @@ const FavoriteDetails = ({ route, navigation }) => {
                 <Text style={styles.itemsText}>Utilisation moyenne dans la semaine</Text>
                 <Text style={styles.dataText}>{props.usage}</Text>
             </View>
+            */}
         </View>
     )
 }
@@ -63,6 +81,7 @@ const FavoriteDetails = ({ route, navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: 'white'
     },
     titleContainer: {
         paddingVertical: 30,
@@ -140,6 +159,10 @@ const styles = StyleSheet.create({
         //fontFamily: 'NunitoBold',
         fontSize: 14,
         color: "white"
+    },
+    step_separator: {
+        marginHorizontal: 7,
+        alignSelf: 'center'
     }
 });
 
