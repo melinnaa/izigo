@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { StackActions } from '@react-navigation/native';
 import { StyleSheet, Text, View, Dimensions, ScrollView, Image, TouchableOpacity, Alert } from 'react-native';
-import MapView, { PROVIDER_GOOGLE } from 'react-native-maps'
+import MapView, { PROVIDER_GOOGLE, Polyline} from 'react-native-maps'
 import { Marker } from 'react-native-maps';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import MapViewDirections from 'react-native-maps-directions';
@@ -10,7 +10,7 @@ import firebase from './../../Firebase/firebase';
 import '@firebase/firestore'
 
 const Itinerary = ({ navigation, route }) => {
-	const [itinerary, setItinerary] = useState()
+	const [itinerary, setItinerary] = useState();
 	const [isFavorite, setIsFavorite] = useState(route.params.isFavorite)
 	const [paths, setPaths] = useState();
 	const [markers, setMarkers] = useState();
@@ -147,6 +147,12 @@ const Itinerary = ({ navigation, route }) => {
 		navigation.dispatch(StackActions.pop(1))
 	}
 
+	const time_convert = (num) => { 
+        var hours = Math.floor(num / 60);  
+        var minutes = num % 60;
+        return hours + "h" + minutes;         
+    }
+
 	return (
 		<ScrollView style={styles.container}>
 			<View style={styles.arrowIcon}>
@@ -167,26 +173,21 @@ const Itinerary = ({ navigation, route }) => {
 					{paths.map((path) => {
 						if (path.type === "street_network") {
 							return (
-								<MapViewDirections
-									origin={path.coords[0]}
-									waypoints={path.coords}
-									destination={path.coords[path.coords.length - 1]}
-									apikey={'AIzaSyC7nSp83OyKXsEQ991GVi99QpmrHORt-CY'}
-									strokeColor={"black"}
+								<Polyline
+									coordinates={path.coords}
+									strokeColor={"#B24112"}
 									strokeWidth={4}
-									optimizeWaypoints={true}
-								/>);
+								/>
+							);
 						}
 						else if (path.type === "public_transport") {
 							return (
-								<MapViewDirections
-									origin={path.coords[0]}
-									waypoints={path.coords}
-									destination={path.coords[path.coords.length - 1]}
-									apikey={'AIzaSyC7nSp83OyKXsEQ991GVi99QpmrHORt-CY'}
+								<Polyline
+									coordinates={path.coords}
 									strokeColor={"#" + path.color}
 									strokeWidth={4}
-								/>);
+								/>
+							);
 						}
 					}
 					)}
@@ -195,14 +196,14 @@ const Itinerary = ({ navigation, route }) => {
 						coordinate={markers.departure}
 						title={itinerary.departure.name}
 						description={"Départ"}>
-						<Image source={require('../../assets/icon.png')} style={{ height: 45, width: 35 }} />
+						<Image source={require('../../assets/map/pin.png')} style={{ height: 27, width: 27 }} />
 					</Marker>
 					<Marker
 						key={2}
 						coordinate={markers.arrival}
 						title={itinerary.arrival.name}
 						description={"Arrivée"}>
-						<Image source={require('../../assets/map/pin.png')} style={{ height: 27, width: 27 }} />
+						<Image source={require('../../assets/icon.png')} style={{ height: 45, width: 35 }} />
 					</Marker>
 				</MapView>
 			}
@@ -224,29 +225,23 @@ const Itinerary = ({ navigation, route }) => {
 							{itinerary.sections.map((section) => {
 								if (section.type === "public_transport") {
 									return (
-										<View style={styles.step}>
-											<Text>
+										<View style={{flexDirection: "row", alignItems: 'center'}}>
+											<View style={[styles.step]}>                          
 												{section.display_informations.commercial_mode == "RER" &&
-													<View>
-														<Image source={{ uri: 'https://github.com/melinnaa/izigo/blob/main/src/assets/img/transports/rer/RER' + section.display_informations.label + '.png?raw=true' }} style={{ width: 40, height: 40, top: 15 }} />
-													</View>
+													<Image source={{ uri: 'https://github.com/melinnaa/izigo/blob/main/src/assets/img/transports/rer/RER' + section.display_informations.label + '.png?raw=true' }} style={{ width: 20, height: 20, alignSelf: 'baseline',}} />
 												}
 												{section.display_informations.commercial_mode === "Bus" &&
-													<Text style={[styles.busLabel, styles.transportLabel, { backgroundColor: "#" + section.display_informations.color, color: "#" + section.display_informations.text_color, top: 15 }]}> {section.display_informations.label} </Text>
+													<Text style={[styles.busLabel, styles.transportLabel, { backgroundColor: "#" + section.display_informations.color, color: "#" + section.display_informations.text_color}]}> {section.display_informations.label} </Text>
 												}
 												{section.display_informations.commercial_mode === "Métro" &&
-													<View>
-														<Image source={{ uri: 'https://github.com/melinnaa/izigo/blob/main/src/assets/img/transports/metro/Metro' + section.display_informations.label + '.png?raw=true' }} style={{ width: 40, height: 40, top: 15 }} />
-													</View>
+													<Image source={{ uri: 'https://github.com/melinnaa/izigo/blob/main/src/assets/img/transports/metro/Metro' + section.display_informations.label + '.png?raw=true' }} style={{ width: 20, height: 20}} />
 												}
 												{section.display_informations.commercial_mode === "Train" &&
-													<View>
-														<Text style={[styles.busLabel, styles.transportLabel, { backgroundColor: "#" + section.display_informations.color, color: "#" + section.display_informations.text_color, width: 40, height: 40, top: 15 }]}> {section.display_informations.label} </Text>
-													</View>
+													<Text style={[styles.busLabel, styles.transportLabel, { backgroundColor: "#" + section.display_informations.color, color: "#" + section.display_informations.text_color, width: 20, height: 20}]}> {section.display_informations.label} </Text>
 												}
-											</Text>
+											</View>
 											<View style={styles.step_separator}>
-												<Ionicons style={styles.icon} name="radio-button-on" size={5} color="grey" />
+												<Ionicons name="radio-button-on" size={5} color="grey" />
 											</View>
 										</View>
 									)
@@ -254,16 +249,15 @@ const Itinerary = ({ navigation, route }) => {
 
 								else if (section.type === "street_network") {
 									return (
-										<View style={styles.step}>
-											<Ionicons name={"walk"} size={25} />
-											<Text>
-												{/* afficher le petit bonhomme + durée en secondes */}
-												{Math.round(section.duration / 60)} mn
-
-											</Text>
-											<View>
+										<View>
+											<View style={[styles.step]}>
+												<Ionicons name={"walk"} size={25} />
+												<Text>
+													{/* afficher le petit bonhomme + durée en secondes */}
+													{Math.round(section.duration / 60)} mn
+												</Text>
 												<View style={styles.step_separator}>
-													<Ionicons style={styles.icon} name="radio-button-on" size={5} color="grey" />
+													<Ionicons name="radio-button-on" size={5} color="grey" />
 												</View>
 											</View>
 										</View>
@@ -274,11 +268,33 @@ const Itinerary = ({ navigation, route }) => {
 						</View>
 						<View style={styles.duration}>
 							<Text style={styles.duration_number}>
-								{itinerary.duration}
+								{Math.round(itinerary.duration) >= 60 ? time_convert(Math.round(itinerary.duration)) : Math.round(itinerary.duration)}
 							</Text>
 							<Text style={styles.duration_text}>
 								min
 							</Text>
+						</View>
+					</View>
+					<View style={[styles.section, {marginTop: 20}]}>
+						<View style={styles.pathContainer}>
+							<View style={[styles.borderLeft]}>
+								<View>
+									<Image source={require('../../assets/map/pin.png')} style={{ height: 27, width: 27 }} />
+								</View>
+								<View>
+									<Text>
+										.
+									</Text>
+									<Text>
+										.
+									</Text>
+								</View>
+							</View>
+							<View style={styles.locationLine}>
+								<Text style={{ marginBottom: 10, fontWeight: '500'}}>
+									{itinerary.departure.name}
+								</Text>
+							</View>
 						</View>
 					</View>
 					{itinerary.sections.map((section) => {
@@ -293,12 +309,18 @@ const Itinerary = ({ navigation, route }) => {
 											<Text style={styles.stopPoint}> {section.from.stop_point.name} </Text>
 
 											<View style={styles.direction}>
-												<View>
-													{section.display_informations.commercial_mode === "Bus" &&
-														<Text style={[styles.busLabel, styles.transportLabel, { backgroundColor: "#" + section.display_informations.color, color: "#" + section.display_informations.text_color }]}> {section.display_informations.label} </Text>
+												<View>                     
+													{section.display_informations.commercial_mode == "RER" &&
+														<Image source={{ uri: 'https://github.com/melinnaa/izigo/blob/main/src/assets/img/transports/rer/RER' + section.display_informations.label + '.png?raw=true' }} style={{ width: 20, height: 20, alignSelf: 'baseline',}} />
 													}
-													{section.display_informations.commercial_mode !== "Bus" &&
-														<Text style={[styles.transportLabel]}> {section.display_informations.label} </Text>
+													{section.display_informations.commercial_mode === "Bus" &&
+														<Text style={[styles.busLabel, styles.transportLabel, { backgroundColor: "#" + section.display_informations.color, color: "#" + section.display_informations.text_color}]}> {section.display_informations.label} </Text>
+													}
+													{section.display_informations.commercial_mode === "Métro" &&
+														<Image source={{ uri: 'https://github.com/melinnaa/izigo/blob/main/src/assets/img/transports/metro/Metro' + section.display_informations.label + '.png?raw=true' }} style={{ width: 20, height: 20}} />
+													}
+													{section.display_informations.commercial_mode === "Train" &&
+														<Text style={[styles.busLabel, styles.transportLabel, { backgroundColor: "#" + section.display_informations.color, color: "#" + section.display_informations.text_color, width: 20, height: 20}]}> {section.display_informations.label} </Text>
 													}
 												</View>
 												<Text style={styles.directionText}>{section.display_informations.direction} </Text>
@@ -384,6 +406,28 @@ const Itinerary = ({ navigation, route }) => {
 						}
 
 					})}
+					<View style={styles.section}>
+						<View style={styles.pathContainer}>
+							<View style={[styles.borderLeft]}>
+								<View>
+									<Text>
+										.
+									</Text>
+									<Text>
+										.
+									</Text>
+								</View>
+								<View>
+									<Image source={require('../../assets/icon.png')} style={{ height: 45, width: 35 }} />
+								</View>
+							</View>
+							<View style={styles.locationLine}>
+								<Text style={{marginLeft: 10, marginTop: 10, fontWeight: '500'}}>
+									{itinerary.arrival.name}
+								</Text>
+							</View>
+						</View>
+					</View>
 				</View>
 			}
 		</ScrollView>
@@ -402,6 +446,7 @@ const styles = StyleSheet.create({
 		borderTopRightRadius: 50,
 		backgroundColor: 'white',
 		zIndex: 100,
+		paddingBottom: 150
 	},
 	favIcon: {
 		marginTop: -50,
@@ -420,19 +465,21 @@ const styles = StyleSheet.create({
 	schema: {
 		width: 300,
 		flexDirection: "row",
-		alignItems: 'baseline',
 		flexWrap: 'wrap'
 	},
 	step: {
-		flexDirection: "row",
-		alignItems: 'baseline'
-	},
-	step_separator: {
-		marginHorizontal: 10
-	},
+        flexDirection: "row",
+        alignItems: 'center',
+        alignSelf: 'center'
+    },
+    step_separator: {
+        marginHorizontal: 4,
+        alignSelf: 'center'
+    },
 	duration: {
 		flexDirection: "row",
-		alignItems: 'baseline'
+		alignItems: 'baseline',
+		right: 20
 	},
 	duration_number: {
 		fontSize: 30,
@@ -440,7 +487,7 @@ const styles = StyleSheet.create({
 	},
 	duration_text: {
 		fontSize: 15,
-		fontWeight: '500'
+		fontWeight: '500',
 	},
 	section: {
 		flexDirection: "row",
@@ -459,6 +506,11 @@ const styles = StyleSheet.create({
 		paddingVertical: 0,
 		width: Dimensions.get('window').width * 40 / 100,
 	},
+	locationLine: {
+		marginLeft: 15,
+		alignSelf: 'center',
+		paddingVertical: 0,
+	},
 	direction: {
 		flexDirection: "row",
 		marginVertical: 45,
@@ -466,6 +518,7 @@ const styles = StyleSheet.create({
 		alignItems: 'center'
 	},
 	directionText: {
+		marginLeft:10,
 		fontWeight: '300',
 		fontStyle: 'italic'
 	},
@@ -501,7 +554,11 @@ const styles = StyleSheet.create({
 		display: "flex",
 		top: 60,
 		left: 15,
-		zIndex: 100
+		zIndex: 100,
+		shadowOffset:{  width: 2,  height: 2,  },
+        shadowColor: 'grey',
+        shadowOpacity: 1.0,
+        shadowRadius: 2,
 	},
 })
 

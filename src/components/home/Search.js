@@ -41,7 +41,7 @@ const Search = ({ navigation }) => {
             return;
         }
 
-        let location = await Location.getCurrentPositionAsync({});
+        const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced, });
 
         Promise.resolve(getAddress([location.coords.latitude, location.coords.longitude]))
             .then((resp) => {
@@ -187,6 +187,12 @@ const Search = ({ navigation }) => {
         return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
     }
 
+    const time_convert = (num) => { 
+        var hours = Math.floor(num / 60);  
+        var minutes = num % 60;
+        return hours + "h" + minutes;         
+    }
+
     return (
         <View style={styles.container}>
             <View style={styles.inputsBoxContainer}>
@@ -196,9 +202,9 @@ const Search = ({ navigation }) => {
                 <Text style={styles.title}>Où allons-nous ?</Text>
 
                 {departureIsCurrent == true &&
-                    <View style={styles.inputContainer}>
+                    <View style={[styles.inputContainer, { marginHorizontal: 20 }]}>
                         <TouchableOpacity style={styles.locationIcon} onPress={() => removeCurrentPosition("departure")}>
-                            <Ionicons name="locate" size={28} color="black" />
+                            <Ionicons name="locate-outline" size={28} color="white" />
                         </TouchableOpacity>
                         <View style={styles.currentLocationText}>
                             <Text> {departure.name} </Text>
@@ -208,7 +214,12 @@ const Search = ({ navigation }) => {
                 {departureIsCurrent == false &&
                     <View style={styles.inputContainer}>
                         <TouchableOpacity style={styles.locationIcon} onPress={() => getCurrentPosition("departure")}>
-                            <Ionicons name="locate-outline" size={28} color="white" />
+                            <Ionicons name="locate-outline" size={28} color="white" 
+                            style={{
+                                shadowOffset:{  width: 2,  height: 2,  },
+                                shadowColor: 'black',
+                                shadowOpacity: 0.5,
+                                shadowRadius: 0.6}}/>
                         </TouchableOpacity>
                         <GooglePlacesAutocomplete
                             placeholder='Départ'
@@ -263,7 +274,7 @@ const Search = ({ navigation }) => {
                 {arrivalIsCurrent == true &&
                     <View style={[styles.inputContainer, { marginHorizontal: 20 }]}>
                         <TouchableOpacity style={styles.locationIcon} onPress={() => removeCurrentPosition("arrival")}>
-                            <Ionicons name="locate" size={28} color="black" />
+                            <Ionicons name="locate-outline" size={28} color="black" />
                         </TouchableOpacity>
                         <View style={styles.currentLocationText}>
                             <Text> {arrival.name} </Text>
@@ -273,7 +284,12 @@ const Search = ({ navigation }) => {
                 {arrivalIsCurrent == false &&
                     <View style={styles.inputContainer}>
                         <TouchableOpacity style={styles.locationIcon} onPress={() => getCurrentPosition("arrival")}>
-                            <Ionicons name="locate-outline" size={28} color="white" />
+                            <Ionicons name="locate-outline" size={28} color="white" 
+                            style={{
+                                shadowOffset:{  width: 2,  height: 2,  },
+                                shadowColor: 'black',
+                                shadowOpacity: 0.5,
+                                shadowRadius: 0.6}}/>
                         </TouchableOpacity>
                         <GooglePlacesAutocomplete
                             placeholder='Destination'
@@ -322,11 +338,14 @@ const Search = ({ navigation }) => {
                         />
                     </View>
                 }
-                <View>
+                <View style={{alignItems: 'center', marginTop: 15}}>
                     <TouchableOpacity onPress={() => showResults()}>
-                        <View style={styles.submitBtn}>
-                            <Text>Go</Text>
-                        </View>
+                        <Ionicons name={"navigate-circle-outline"} size={55} color={"white"} 
+                        style={{
+                            shadowOffset:{  width: 2,  height: 2,  },
+                            shadowColor: 'black',
+                            shadowOpacity: 0.2,
+                            shadowRadius: 1}}/>
                     </TouchableOpacity>
                 </View>
 
@@ -354,44 +373,40 @@ const Search = ({ navigation }) => {
                                         {item.sections.map((section) => {
                                             if (section.type === "public_transport") {
                                                 return (
-                                                    <View style={styles.step}>
-                                                        <Text style={styles.borderLeft}>
+                                                    <View style={{flexDirection: "row", alignItems: 'center'}}>
+                                                        <View style={[styles.step]}>                          
                                                             {section.display_informations.commercial_mode == "RER" &&
-                                                                <View>
-                                                                    <Image source={{ uri: 'https://github.com/melinnaa/izigo/blob/main/src/assets/img/transports/rer/RER' + section.display_informations.label + '.png?raw=true' }} style={{ width: 40, height: 40, top: 15 }} />
-                                                                </View>
+                                                                <Image source={{ uri: 'https://github.com/melinnaa/izigo/blob/main/src/assets/img/transports/rer/RER' + section.display_informations.label + '.png?raw=true' }} style={{ width: 20, height: 20, alignSelf: 'baseline',}} />
                                                             }
                                                             {section.display_informations.commercial_mode === "Bus" &&
-                                                                <Text style={[styles.busLabel, styles.transportLabel, { backgroundColor: "#" + section.display_informations.color, color: "#" + section.display_informations.text_color, top: 15 }]}> {section.display_informations.label} </Text>
+                                                                <Text style={[styles.busLabel, styles.transportLabel, { backgroundColor: "#" + section.display_informations.color, color: "#" + section.display_informations.text_color}]}> {section.display_informations.label} </Text>
                                                             }
                                                             {section.display_informations.commercial_mode === "Métro" &&
-                                                                <View>
-                                                                    <Image source={{ uri: 'https://github.com/melinnaa/izigo/blob/main/src/assets/img/transports/metro/Metro' + section.display_informations.label + '.png?raw=true' }} style={{ width: 40, height: 40, top: 15 }} />
-                                                                </View>
+                                                                <Image source={{ uri: 'https://github.com/melinnaa/izigo/blob/main/src/assets/img/transports/metro/Metro' + section.display_informations.label + '.png?raw=true' }} style={{ width: 20, height: 20}} />
                                                             }
                                                             {section.display_informations.commercial_mode === "Train" &&
-                                                                <View>
-                                                                    <Text style={[styles.busLabel, styles.transportLabel, { backgroundColor: "#" + section.display_informations.color, color: "#" + section.display_informations.text_color, width: 40, height: 40, top: 15 }]}> {section.display_informations.label} </Text>
-                                                                </View>
+                                                                <Text style={[styles.busLabel, styles.transportLabel, { backgroundColor: "#" + section.display_informations.color, color: "#" + section.display_informations.text_color, width: 20, height: 20}]}> {section.display_informations.label} </Text>
                                                             }
-                                                        </Text>
-                                                        <View style={styles.step_separator}>
-                                                            <Ionicons style={styles.icon} name="radio-button-on" size={5} color="grey" />
                                                         </View>
-                                                    </View>
+                                                        <View style={styles.step_separator}>
+                                                            <Ionicons name="radio-button-on" size={5} color="grey" />
+                                                        </View>
+                                                    </View>   
                                                 )
                                             }
 
                                             else if (section.type === "street_network") {
                                                 return (
-                                                    <View style={styles.step}>
-                                                        <Ionicons name={"walk"} size={25} />
-                                                        <Text>
-                                                            {/* afficher le petit bonhomme + durée en secondes */}
-                                                            {Math.round(section.duration / 60)} mn
-                                                        </Text>
-                                                        <View style={styles.step_separator}>
-                                                            <Ionicons style={styles.icon} name="radio-button-on" size={5} color="grey" />
+                                                    <View>
+                                                        <View style={[styles.step]}>
+                                                            <Ionicons name={"walk"} size={25} />
+                                                            <Text>
+                                                                {/* afficher le petit bonhomme + durée en secondes */}
+                                                                {Math.round(section.duration / 60)} mn
+                                                            </Text>
+                                                            <View style={styles.step_separator}>
+                                                                <Ionicons name="radio-button-on" size={5} color="grey" />
+                                                            </View>
                                                         </View>
                                                     </View>
                                                 )
@@ -408,7 +423,7 @@ const Search = ({ navigation }) => {
 
                                 <View style={styles.duration}>
                                     <Text style={styles.duration_number}>
-                                        {Math.round(item.duration)}
+                                        {Math.round(item.duration) >= 60 ? time_convert(Math.round(item.duration)) : Math.round(item.duration)}
                                     </Text>
                                     <Text style={styles.duration_text}>
                                         min
@@ -490,15 +505,6 @@ const styles = StyleSheet.create({
         width: Dimensions.get('window').width,
         height: Dimensions.get('window').height,
     },
-    submitBtn: {
-        backgroundColor: 'white',
-        width: 50,
-        padding: 10,
-        borderRadius: 50,
-        alignSelf: 'center',
-        marginTop: 10,
-        alignItems: 'center'
-    },
 
     submitBtnDisabled: {
         backgroundColor: 'lightgrey',
@@ -513,32 +519,32 @@ const styles = StyleSheet.create({
     //CSS for resultsView
 
     line: {
+        borderBottomWidth: 1,
+        borderBottomColor: "lightgrey",
         flexDirection: "row",
         justifyContent: 'space-between',
         alignItems: 'baseline',
         paddingTop: 20,
+        paddingBottom: 12,
         paddingLeft: 10
     },
     busLabel: {
-		fontSize: 20
+		fontSize: 15,
 	},
     schema: {
         width: 300,
         flexDirection: "row",
-        alignItems: 'baseline',
         flexWrap: 'wrap'
     },
 
     step: {
         flexDirection: "row",
-        alignItems: 'baseline'
+        alignItems: 'center',
+        alignSelf: 'center'
     },
     step_separator: {
-        marginBottom: 10,
-        marginHorizontal: 10
-    },
-    icon: {
-        paddingBottom: 2
+        marginHorizontal: 7,
+        alignSelf: 'center'
     },
     duration: {
         paddingRight: 20,
@@ -546,12 +552,10 @@ const styles = StyleSheet.create({
         alignItems: 'baseline'
     },
     duration_number: {
-        fontSize: 30
+        fontSize: 27
     },
     duration_text: {
         fontSize: 15
-    },
-    transportLabel: {
     }
 })
 
