@@ -1,30 +1,32 @@
 import React, { useEffect, useState } from "react"
-import { StyleSheet, View, Text, TouchableHighlight, Linking, Image, FlatList } from 'react-native';
+import { StyleSheet, View, Text, TouchableHighlight, Linking, Image, FlatList, Button } from 'react-native';
 import axios from "axios";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 const InfoTwitter = ({ navigation, route }) => {
     const [idTransport, setidTransport] = useState([]);
     const [dataTransport, setdataTransport] = useState([]);
-    const [imageTransport, setImageTransport] = useState([]);
+    const [ImageTransport, setImageTransport] = useState([]);
 
     const title = route.params;
     const [refreshing, setRefreshing] = React.useState(false);
 
-    const wait = (timeout) => {
+    /*const wait = (timeout) => {
         return new Promise(resolve => setTimeout(resolve, timeout));
     }
 
     const refreshPage = React.useCallback(() => {
         setRefreshing(true);
         wait(2000).then(() => setRefreshing(false));
-    }, []);
+    }, []);*/
  
     const getImageTransport = async () => {
+        console.log("req2")
         try {
             const resp = await axios.get(`https://api.twitter.com/1.1/users/show.json?user_id=${idTransport}`, {
                 headers: {
                     Authorization: `Bearer ${'AAAAAAAAAAAAAAAAAAAAABABQgEAAAAA9SXFVGSLYdYaBrn9jGFD6queSrY%3DV5KKLwEUJKio24ggY4JjnuRMTa33z5uWDhqKPQBTyCaazHjEkL'}`,
+                    "Access-Control-Allow-Origin": "http://localhost:19006/",
                     "Access-Control-Allow-Credentials": true,
                     "Content-Type": "application/json"
                 }
@@ -36,14 +38,18 @@ const InfoTwitter = ({ navigation, route }) => {
     };
 
     const getDataTransport = async () => {
+        console.log("req3")
         try {
             const resp = await axios.get("https://api.twitter.com/2/users/" + idTransport + "/tweets?tweet.fields=context_annotations", {
                 headers: {
                     Authorization: `Bearer ${'AAAAAAAAAAAAAAAAAAAAABABQgEAAAAA9SXFVGSLYdYaBrn9jGFD6queSrY%3DV5KKLwEUJKio24ggY4JjnuRMTa33z5uWDhqKPQBTyCaazHjEkL'}`,
+                    "Access-Control-Allow-Origin": "http://localhost:19006/",
                     "Access-Control-Allow-Credentials": true,
                     "Content-Type": "application/json"
                 }
             })
+            console.log("hho")
+            console.log(resp)
             return resp;
 
         } catch (err) {
@@ -53,13 +59,16 @@ const InfoTwitter = ({ navigation, route }) => {
 
     const getTransportId = async () => {
         try {
+            console.log("req1")
             const resp = await axios.get(`https://api.twitter.com/2/users/by/username/${title}`, {
                 headers: {
                     Authorization: `Bearer ${'AAAAAAAAAAAAAAAAAAAAABABQgEAAAAA9SXFVGSLYdYaBrn9jGFD6queSrY%3DV5KKLwEUJKio24ggY4JjnuRMTa33z5uWDhqKPQBTyCaazHjEkL'}`,
+                    "Access-Control-Allow-Origin": "http://localhost:19006/",
                     "Access-Control-Allow-Credentials": true,
                     "Content-Type": "application/json"
                 }
             })
+            console.log(resp)
             return resp;
 
         } catch (err) {
@@ -68,10 +77,11 @@ const InfoTwitter = ({ navigation, route }) => {
     };
 
     useEffect(() => {
+        if (idTransport || dataTransport || ImageTransport)
         fetchImageTransport();
         fetchIdTransport();
         fetchDataTransport();
-    }, [idTransport, imageTransport, dataTransport]);
+    }, []);
 
     const fetchImageTransport = () => {
         const data = getImageTransport();
@@ -91,10 +101,14 @@ const InfoTwitter = ({ navigation, route }) => {
         const data = getDataTransport();
         Promise.resolve(data).then((response) => {
             const mydata = response.data.data;
+            console.log("yo")
+            console.log(mydata)
+            
             const tab = [];
             for (var i = 0; i < 3; i++) {
                 tab.push(mydata[i].text)
             }
+            console.log(tab)
             setdataTransport(tab);
         })
     }
@@ -112,12 +126,12 @@ const InfoTwitter = ({ navigation, route }) => {
                 name={'refresh'} size={35}
                 title=""
                 style={styles.refreshButton}
-                onPress={refreshPage}
+                //onPress={refreshPage}
             />
             <Text style={styles.title}>Info Traffic</Text>
             <Image
                 style={styles.ImageBigTransport}
-                source={{ uri: imageTransport }}
+                source={{ uri: ImageTransport }}
             />
             <View style={styles.rectangle}></View>
             <Text style={styles.text}>Trafic sur {title}</Text>
@@ -128,7 +142,7 @@ const InfoTwitter = ({ navigation, route }) => {
                     <View>
                         <Image
                             style={{ width: 50, height: 50 }}
-                            source={{ uri: imageTransport }}
+                            source={{ uri: ImageTransport }}
                         />
                         <View style={styles.tweet}>
                             <View style={styles.descriptionTweet}>
@@ -160,9 +174,14 @@ const InfoTwitter = ({ navigation, route }) => {
                     <Text style={styles.submitText}>Tweeter</Text>
                 </TouchableHighlight>
             </View>
+            <Button title={"show"} onPress={()=> showData()}></Button>
         </View>
 
     )
+
+    function showData(){
+        fetchDataTransport();
+    }
 }
 
 const styles = StyleSheet.create({
