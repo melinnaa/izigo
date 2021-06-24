@@ -6,7 +6,7 @@ import "firebase/auth";
 
 const FavoriteList = ({ navigation }) => {
     const user = firebase.auth().currentUser;
-
+    
     //console.log(firebase.auth().currentUser);
     const userID = firebase.auth().currentUser.email
     var nameUser = userID.substring(0, userID.lastIndexOf("@"));
@@ -15,38 +15,24 @@ const FavoriteList = ({ navigation }) => {
     const [myData, setMyData] = useState([])
 
     const db = firebase.firestore();
-    useEffect(() => {
-        const unsubscribe = navigation.addListener('tabPress', e => {
-            // Prevent default behavior
-            e.preventDefault();
+        useEffect(() => {
+            const dataFavoris = []
+            db.collection('Courses')
+                .where("idUser", "==", userUID)
+                .get()
+                .then(snapshot => {
+                    snapshot.docs.forEach(favoris => {
+                        //let currentID = favoris.id
+                        //let appObj = { ...favoris.data(), ['id']: currentID }
+                        //dataFavoris.push(appObj)
 
-            if (user == null) {
-                alert('Default behavior prevented');
-                navigation.navigate('AccountPage')
-            } else {
-                navigation.navigate('FavoritePage')
-            }
-
-        });
-
-        const dataFavoris = []
-        db.collection('Courses')
-            .where("idUser", "==", userUID)
-            .get()
-            .then(snapshot => {
-                snapshot.docs.forEach(favoris => {
-                    //let currentID = favoris.id
-                    //let appObj = { ...favoris.data(), ['id']: currentID }
-                    //dataFavoris.push(appObj)
-
-                    dataFavoris.push(favoris.data())
-                    //console.log(dataFavoris);
+                        dataFavoris.push(favoris.data())
+                        //console.log(dataFavoris);
+                    })
+                    setMyData(dataFavoris)
                 })
-                setMyData(dataFavoris)
-            })
-        return unsubscribe;
-    }, [myData, navigation])
-
+        }, [myData])
+    
     const signOut = async () => {
         try {
             await firebase.auth().signOut();
