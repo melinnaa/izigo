@@ -4,10 +4,10 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 
 const Report = ({ navigation }) => {
     const [twitterViaAccount, settwitterViaAccount] = useState(
-        '#RATP #ligne_1',
+        '#RATP#ligne_1',
     );
     const [tweetContent, setTweetContent] = useState(
-        'Il y a un bagage perdu dans la ligne ... ! un retard ça c\'est sur !',
+        '',
     );
 
     const tweetNow = () => {
