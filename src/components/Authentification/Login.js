@@ -79,6 +79,7 @@ const Login = ({ navigation }) => {
             console.log(userCredential);
 
             return navigation.navigate('FavoritePage');
+            //return navigation.goBack();
         }
         catch (err) {
             switch (err.code) {

@@ -75,6 +75,7 @@ const Report = ({ navigation }) => {
 
 const styles = StyleSheet.create({
     container: {
+        backgroundColor: 'white',
         flex: 1,
         flexDirection: 'column',
         alignItems: 'center',
