@@ -265,18 +265,6 @@ const TrafficFilters = ({ navigation }) => {
                             <Ionicons name="search-outline" size={15} color="#959595" />
                         </View>
                     </View>
-                    <View style={styles.inputContainer}>
-                        <TextInput
-                            style={styles.input}
-                            value={station}
-                            onChangeText={setStation}
-                            placeholder="Nom de la station"
-                            underlineColorAndroid="transparent"
-                        />
-                        <View style={styles.icon}>
-                            <Ionicons name="search-outline" size={15} color="#959595" />
-                        </View>
-                    </View>
                 </View>
                 <View>
                     <MapView
@@ -305,18 +293,6 @@ const TrafficFilters = ({ navigation }) => {
                             value={line}
                             onChangeText={setLine}
                             placeholder="Ligne"
-                            underlineColorAndroid="transparent"
-                        />
-                        <View style={styles.icon}>
-                            <Ionicons name="search-outline" size={15} color="#959595" />
-                        </View>
-                    </View>
-                    <View style={styles.inputContainer}>
-                        <TextInput
-                            style={styles.input}
-                            value={station}
-                            onChangeText={setStation}
-                            placeholder="Nom de la station"
                             underlineColorAndroid="transparent"
                         />
                         <View style={styles.icon}>

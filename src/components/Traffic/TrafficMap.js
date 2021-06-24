@@ -135,28 +135,33 @@ const TrafficMap = ({ route, navigation }) => {
             }
 
             var coordinates = [];
+            var linePoints = [];
+
             line.forEach((d) => {
-                for (i = 0; i < d.stop_date_times.length; i++) {
+                for (var i = 0; i < d.stop_date_times.length; i++) {
                     const stop_point = d.stop_date_times[i].stop_point
                     const stop_schedules = fetchStopSchedules(stop_point.id);
                     Promise.resolve(stop_schedules).then((sc) => {
                         var stopSchedulesByDirection = [];
                         //Usually 2 directions in one stop point but maybe more for RER
-                        for (j = 0; j < sc.length; j++){
-                            stopSchedulesByDirection = [...stopSchedulesByDirection, {direction: sc[j].route.direction.name , nextArrival: sc[j].date_times[0], nextArrival2: sc[j].date_times[1]}]
+                        for (var j = 0; j < sc.length; j++){
+                            stopSchedulesByDirection = [...stopSchedulesByDirection, {direction: sc[j].route.direction.name , nextArrival: sc[j].date_times[0].date_time, nextArrival2: sc[j].date_times[1].date_time}]
                         }
 
                         var coord = { latitude: parseFloat(stop_point.coord.lat), longitude: parseFloat(stop_point.coord.lon), name: stop_point.name, stopSchedulesByDirection: stopSchedulesByDirection, nb_transfers: d.nb_transferts }
                         coordinates = [...coordinates, coord];
+
+                        var linePoint = { latitude: parseFloat(stop_point.coord.lat), longitude: parseFloat(stop_point.coord.lon) }
+                        linePoints = [...linePoints, linePoint];
+
                         setCoords(coordinates);
+                        setLinePoints(linePoints)
                     })
                 }
             })
         })
 
     }
-
-    //Voir comment transformer dates pour avoir temps d'arrivee
 
     const showDisruptions = () => {
         const data = fetchDisruptions();
@@ -183,18 +188,7 @@ const TrafficMap = ({ route, navigation }) => {
             position.forEach((d) => {
                 setCurrentPosition([...currentPosition, { latitude: parseFloat(d.latitude), longitude: parseFloat(d.longitude), direction: d.direction }]);
             })
-
-
         })
-    }
-
-    const createPolyline = () => {
-        let latLong = [];
-        coords.map(({ latitude, longitude }) => {
-            latLong.push({ latitude: latitude, longitude: longitude });
-        })
-
-        setLinePoints(latLong);
     }
 
     const renderItem = ({item}) => {
@@ -205,26 +199,30 @@ const TrafficMap = ({ route, navigation }) => {
     }
 
     useEffect(() => {
-        console.log("dhors")
-        //const timeout = setTimeout(showResults, 10000);
         if (!coords){
-            console.log("dedans")
             showResults();
             showDisruptions();
-            //showPosition();
         }
-
-        if (coords && !linePoints){
-            createPolyline(coords);
-        }
-
-        return () => {
-            //clearTimeout(timeout);
-        };
-    }, [coords]);
+    }, []);
 
     const getData = () => {
         return disruptions;
+    }
+
+    const dateFormat = (date) => {
+        const year = date.substring(0,4);
+        const month = date.substring(4,6);
+        const day = date.substring(6,8)
+        const hours = date.substring(9,11)
+        const minutes = date.substring(11,13)
+
+        return year+'-'+month+'-'+day+'T'+hours+':'+minutes+':00'
+    }
+
+    const diffMinutesNow = (stringDate) => {
+        const date = new Date(dateFormat(stringDate));
+        const diff = Math.round(Math.abs(date - new Date())/60000);
+        return diff.toString();
     }
     
     return (
@@ -262,19 +260,22 @@ const TrafficMap = ({ route, navigation }) => {
                         >
                             <Callout tooltip>
                                 <View style={styles.calloutContainer}>
-                                    <View style={{ flexDirection: 'row', marginBottom: 5 }}>
-                                        <Text style={styles.calloutText}>{props.code} - </Text>
-                                        <Text style={styles.calloutText}>{name}</Text>
+                                    <View style={styles.calloutTitle}>
+                                        <Text style={styles.calloutTitleText}>{props.code} - </Text>
+                                        <Text style={styles.calloutTitleText}>{name}</Text>
                                     </View>
+                                    <View style={styles.calloutContent}>
                                     {stopSchedulesByDirection.map((direction) => {
-                                        <View style={{ flexDirection: 'row' }}>
-                                        <View style={styles.timeContainer}>
-                                            <Ionicons name="subway-outline" size={20} color={color} />
-                                            <Text style={styles.timeText}>{direction.direction}</Text>
-                                            <Text style={styles.timeText}>{direction.nextArrival} {direction.nextArrival2}</Text>
-                                        </View>
-                                    </View>
+                                        return (
+                                        <View style={styles.calloutContentLine}>
+                                            <Text style={[styles.calloutContentText]}>{direction.direction}</Text>
+                                            <View style={{flexDirection: "row", alignItems: 'center'}}>
+                                                <Ionicons name={"cellular-outline"} color={"#128A60"} size={20} style={{marginRight: 10}}/>
+                                                <Text style={[styles.calloutContentText, {fontWeight: "500", color: "#128A60"}]}>{diffMinutesNow(direction.nextArrival)} mn, {diffMinutesNow(direction.nextArrival2)} mn</Text>
+                                            </View>
+                                        </View>);   
                                     })}
+                                    </View>
                                 </View>
                             </Callout>
                         </Marker>
@@ -378,28 +379,36 @@ const styles = StyleSheet.create({
     },
     calloutContainer: {
         backgroundColor: 'white',
-        borderRadius: 4,
-        paddingVertical: 5,
+        borderRadius: 15,
+        paddingVertical: 10,
         paddingHorizontal: 10,
-        width: 200,
-        height: 100,
+        width: 300,
         flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center'
     },
-    calloutText: {
+
+    calloutTitle: {
+        padding: 3,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    calloutTitleText: {
         color: 'black',
         fontFamily: 'NunitoBold',
-        fontSize: 13
+        fontSize: 14,
+        fontWeight: "400",
     },
-    timeContainer: {
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        flexDirection: 'row'
+    calloutContent: {
+        alignItems: 'flex-start'
     },
-    timeText: {
-        fontFamily: 'NunitoRegular',
-        fontSize: 14
+    calloutContentLine: {
+        flexDirection: 'column',
+        marginVertical:7,
+    },
+    calloutContentText: {
+        flexWrap: 'wrap',
+        width: 260,
+        fontSize: 14,
     },
     infosContainer: {
         paddingBottom: 55,
