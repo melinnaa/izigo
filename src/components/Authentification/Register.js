@@ -102,7 +102,7 @@ const Register = ({ navigation }) => {
         <View style={styles.container}>
             <Image
                 style={styles.tinyLogo}
-                source={require('../../assets/splash.png')}
+                source={require('../../assets/splash2.png')}
             />
             <Text style={styles.title}>Inscription</Text>
             <TextInput
