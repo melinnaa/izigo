@@ -95,16 +95,16 @@ const styles = StyleSheet.create({
         margin: 1
     },
     bonjourText: {
-        //fontFamily: "NunitoLight",
+        fontFamily: "NunitoLight",
         fontSize: 36,
-        //fontWeight:"normal",
+        fontWeight:"normal",
         paddingTop: "15%",
         paddingLeft: 20
     },
     nameText: {
         fontSize: 36,
-        //fontFamily: "NunitoBold",
-        //fontWeight:"bold",
+        fontFamily: "NunitoBold",
+        fontWeight:"bold",
         paddingBottom: 45,
         paddingLeft: 20
     },
@@ -118,12 +118,13 @@ const styles = StyleSheet.create({
         paddingRight: 20,
     },
     chevronContainer: {
-        paddingRight: 0,
-        paddingRight: 10
+        paddingRight: 10,
+        //paddingRight: 10
+        justifyContent:'flex-end'
     },
     favorisText: {
         fontSize: 28,
-        //fontFamily: "NunitoBold",
+        fontFamily: "NunitoBold",
         paddingRight: 20,
         paddingBottom: 20,
         paddingLeft: 20,
@@ -140,7 +141,7 @@ const styles = StyleSheet.create({
     },
     item: {
         fontSize: 14,
-        //fontFamily: "NunitoBold",
+        fontFamily: "NunitoBold",
         alignItems: "center",
         justifyContent: 'flex-start',
         paddingLeft: 10,
