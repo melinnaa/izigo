@@ -106,6 +106,7 @@ const styles = StyleSheet.create({
         color: '#000000',
     },
     input: {
+        fontFamily: "Nunito",
         borderColor: '#D3D3D3',
         opacity: 1,
         top: "37%",
@@ -118,6 +119,7 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     inputHashtag: {
+        fontFamily: "Nunito",
         borderColor: '#D3D3D3',
         opacity: 1,
         top: "40%",
@@ -142,6 +144,7 @@ const styles = StyleSheet.create({
         borderColor: '#fff'
     },
     submitText: {
+        fontFamily: "NunitoBold",
         color: '#fff',
         textAlign: 'center',
         fontSize: 20

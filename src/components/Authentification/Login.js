@@ -76,7 +76,7 @@ const Login = ({ navigation }) => {
     const signIn = async () => {
         try {
             const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
-            console.log(userCredential);
+            //console.log(userCredential);
 
             return navigation.navigate('FavoritePage');
             //return navigation.goBack();
@@ -104,7 +104,7 @@ const Login = ({ navigation }) => {
     useEffect(() => {
         firebase.auth().onAuthStateChanged((user) => {
             if (user != null) {
-                console.log(user)
+                //console.log(user)
             }
         })
     }, []);

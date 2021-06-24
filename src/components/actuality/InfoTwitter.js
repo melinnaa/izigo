@@ -209,6 +209,7 @@ const styles = StyleSheet.create({
         top: "-2%"
     },
     text: {
+        fontFamily: 'NunitoBold',
         position: 'absolute',
         left: '27%',
         right: '5.6%',
@@ -260,6 +261,7 @@ const styles = StyleSheet.create({
         borderColor: '#fff'
     },
     submitText: {
+        fontFamily: 'NunitoBold',
         color: '#fff',
         textAlign: 'center',
         fontSize: 20

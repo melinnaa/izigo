@@ -10,27 +10,27 @@ import FavoritePage from './src/containers/FavoritePage';
 import ActualityPage from "./src/containers/ActualityPage";
 import AccountPage from './src/containers/AccountPage';
 import TrafficPage from './src/containers/TrafficPage';
+import Font, { useFonts } from "expo-font";
 
 
 const Tabs = createBottomTabNavigator();
 
 const App = () => {
-
   const [loaded] = useFonts({
-    NunitoBlack: require("./src/assets/fonts/Nunito/Nunito-Black.ttf"),
-    NunitoBlackItalic: require("./src/assets/fonts/Nunito/Nunito-BlackItalic.ttf"),
-    NunitoBold: require("./src/assets/fonts/Nunito/Nunito-Bold.ttf"),
-    NunitoBoldItalic: require("./src/assets/fonts/Nunito/Nunito-BoldItalic.ttf"),
-    NunitoExtraBold: require("./src/assets/fonts/Nunito/Nunito-ExtraBold.ttf"),
-    NunitoExtraBoldItalic: require("./src/assets/fonts/Nunito/Nunito-ExtraBoldItalic.ttf"),
-    NunitoExtraLight: require("./src/assets/fonts/Nunito/Nunito-ExtraLight.ttf"),
-    NunitoExtraLightItalic: require("./src/assets/fonts/Nunito/Nunito-ExtraLightItalic.ttf"),
-    NunitoItalic: require("./src/assets/fonts/Nunito/Nunito-Italic.ttf"),
-    NunitoLight: require("./src/assets/fonts/Nunito/Nunito-Light.ttf"),
-    NunitoLightItalic: require("./src/assets/fonts/Nunito/Nunito-LightItalic.ttf"),
-    NunitoRegular: require("./src/assets/fonts/Nunito/Nunito-Regular.ttf"),
-    NunitoSemiBold: require("./src/assets/fonts/Nunito/Nunito-SemiBold.ttf"),
-    NunitoSemiBoldItalic: require("./src/assets/fonts/Nunito/Nunito-SemiBoldItalic.ttf")
+    NunitoBlack: require("./src/assets/fonts/Nunito-Black.ttf"),
+    NunitoBlackItalic: require("./src/assets/fonts/Nunito-BlackItalic.ttf"),
+    NunitoBold: require("./src/assets/fonts/Nunito-Bold.ttf"),
+    NunitoBoldItalic: require("./src/assets/fonts/Nunito-BoldItalic.ttf"),
+    NunitoExtraBold: require("./src/assets/fonts/Nunito-ExtraBold.ttf"),
+    NunitoExtraBoldItalic: require("./src/assets/fonts/Nunito-ExtraBoldItalic.ttf"),
+    NunitoExtraLight: require("./src/assets/fonts/Nunito-ExtraLight.ttf"),
+    NunitoExtraLightItalic: require("./src/assets/fonts/Nunito-ExtraLightItalic.ttf"),
+    NunitoItalic: require("./src/assets/fonts/Nunito-Italic.ttf"),
+    NunitoLight: require("./src/assets/fonts/Nunito-Light.ttf"),
+    NunitoLightItalic: require("./src/assets/fonts/Nunito-LightItalic.ttf"),
+    NunitoRegular: require("./src/assets/fonts/Nunito-Regular.ttf"),
+    NunitoSemiBold: require("./src/assets/fonts/Nunito-SemiBold.ttf"),
+    NunitoSemiBoldItalic: require("./src/assets/fonts/Nunito-SemiBoldItalic.ttf")
   });
 
   if (!loaded) {
@@ -121,7 +121,7 @@ export default App;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'white',
     alignItems: 'center',
     justifyContent: 'center',
   },
