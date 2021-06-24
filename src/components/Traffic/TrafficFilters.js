@@ -51,7 +51,6 @@ const TrafficFilters = ({ navigation }) => {
     }
 
     const showResults = () => {
-        console.log("showing")
         const data = fetchData();
 
         Promise.resolve(data).then((response) => {
@@ -73,7 +72,6 @@ const TrafficFilters = ({ navigation }) => {
 
     }
     const showResultsTram = () => {
-        console.log("showing");
         const dataTram = fetchDataTram();
         Promise.resolve(dataTram).then((response) => {
             const transport = new Array;
@@ -93,7 +91,6 @@ const TrafficFilters = ({ navigation }) => {
     }
 
     const showResultsRER = () => {
-        console.log("showing");
         const dataRER = fetchDataRER();
         Promise.resolve(dataRER).then((response) => {
             const transport = new Array;
@@ -104,7 +101,6 @@ const TrafficFilters = ({ navigation }) => {
             }
             
             transport.forEach((d) => {
-                console.log(d.toLat);
                 if (d.code == line) {
                     var search = { id: d.id, name: d.name, code: d.code, color: d.color, routes: d.routes, fromLat: d.fromLat, toLon: d.toLon, toLat: d.toLat }
                     setListTram([...listTram, search]);
@@ -116,7 +112,6 @@ const TrafficFilters = ({ navigation }) => {
     }
 
     const showResultsStation = () => {
-        console.log("showing")
         const data = fetchLinesForStation();
         Promise.resolve(data).then((response) => {
             //ça passe
@@ -193,7 +188,6 @@ const TrafficFilters = ({ navigation }) => {
     }
 
     const fetchStopAreas = async () => {
-        console.log("showing")
         const data = fetchDataStation();
         Promise.resolve(data).then((response) => {
             const transport = new Array;
@@ -202,7 +196,6 @@ const TrafficFilters = ({ navigation }) => {
             for (var i = 0; i < stop_areas.length; i++) {
                 transport.push(formatStations(stop_areas[i]));
             }
-            console.log(transport);
             transport.forEach(async (d) => {
                 if (d.name == station) {
                     setStopArea(d.id);
@@ -248,6 +241,7 @@ const TrafficFilters = ({ navigation }) => {
         fetchLinesForStation();
 
         const timeout2 = setTimeout(showResultsStation, 1000);
+        
         return () => {
             clearTimeout(timeout);
             clearTimeout(timeout2);

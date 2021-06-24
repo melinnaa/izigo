@@ -13,8 +13,8 @@ const TrafficMap = ({ route, navigation }) => {
     const modalizeRef = useRef(null);
 
     const [line, setLine] = useState(route.params.line);
-    const [coords, setCoords] = useState([]);
-    const [linePoints, setLinePoints] = useState([]);
+    const [coords, setCoords] = useState();
+    const [linePoints, setLinePoints] = useState();
     const [disruptions, setDisruptions] = useState([]);
     const [color] = useState("#" + props.color);
     const [currentPosition, setCurrentPosition] = useState([]);
@@ -37,8 +37,6 @@ const TrafficMap = ({ route, navigation }) => {
     const formatLines = (item) => {
         return {
             sections: item.sections,
-            departure_date_time: item.departure_date_time,
-            arrival_date_time: item.arrival_date_time,
             stop_date_times: item.sections[1].stop_date_times,
             nb_transferts: item.nb_transfers
         }
@@ -69,7 +67,21 @@ const TrafficMap = ({ route, navigation }) => {
             return resp
 
         } catch (err) {
-            console.log(err.response);
+        }
+    }
+
+    const fetchStopSchedules = async (stop_point_id) => {
+        try {
+            const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/stop_points/"+stop_point_id+"/stop_schedules?count=10&items_per_schedule=2&", {
+                headers: {
+                    'Authorization': `7a9c06ed-e0b6-4bc3-a7da-f27d4cbee972`,
+                }
+            });
+
+            return resp.data.stop_schedules;
+
+        } catch (err) {
+            console.log(err)
         }
     }
 
@@ -83,7 +95,6 @@ const TrafficMap = ({ route, navigation }) => {
             return resp.data.disruptions
 
         } catch (err) {
-            console.log(err.response);
         }
     }
 
@@ -97,7 +108,6 @@ const TrafficMap = ({ route, navigation }) => {
             return resp
 
         } catch (err) {
-            console.log(err.response);
         }
     }
 
@@ -112,17 +122,14 @@ const TrafficMap = ({ route, navigation }) => {
             return resp
 
         } catch (err) {
-            console.log(err.response);
         }
     }
 
     const showResults = () => {
-        console.log("showing")
         const data = fetchData();
-        Promise.resolve(data).then((response) => {
+        Promise.resolve(data).then((resp1) => {
             const line = new Array;
-            const journeys = response.data.journeys;
-
+            const journeys = resp1.data.journeys;
             for (var i = 0; i < journeys.length; i++) {
                 line.push(formatLines(journeys[i]));
             }
@@ -130,11 +137,21 @@ const TrafficMap = ({ route, navigation }) => {
             var coordinates = [];
             line.forEach((d) => {
                 for (i = 0; i < d.stop_date_times.length; i++) {
-                    var coord = { latitude: parseFloat(d.stop_date_times[i].stop_point.coord.lat), longitude: parseFloat(d.stop_date_times[i].stop_point.coord.lon), name: d.stop_date_times[i].stop_point.name, departure_time: d.stop_date_times[i].departure_date_time, arrival_time: d.stop_date_times[i].arrival_date_time, nb_transfers: d.nb_transferts }
-                    coordinates = [...coordinates, coord];
+                    const stop_point = d.stop_date_times[i].stop_point
+                    const stop_schedules = fetchStopSchedules(stop_point.id);
+                    Promise.resolve(stop_schedules).then((sc) => {
+                        var stopSchedulesByDirection = [];
+                        //Usually 2 directions in one stop point but maybe more for RER
+                        for (j = 0; j < sc.length; j++){
+                            stopSchedulesByDirection = [...stopSchedulesByDirection, {direction: sc[j].route.direction.name , nextArrival: sc[j].date_times[0], nextArrival2: sc[j].date_times[1]}]
+                        }
+
+                        var coord = { latitude: parseFloat(stop_point.coord.lat), longitude: parseFloat(stop_point.coord.lon), name: stop_point.name, stopSchedulesByDirection: stopSchedulesByDirection, nb_transfers: d.nb_transferts }
+                        coordinates = [...coordinates, coord];
+                        setCoords(coordinates);
+                    })
                 }
             })
-            setCoords(coordinates);
         })
 
     }
@@ -154,7 +171,6 @@ const TrafficMap = ({ route, navigation }) => {
     }
 
     const showPosition = () => {
-        console.log("showing")
         const data = fetchPosition();
         Promise.resolve(data).then((response) => {
             const position = new Array;
@@ -189,35 +205,42 @@ const TrafficMap = ({ route, navigation }) => {
     }
 
     useEffect(() => {
-        const timeout = setTimeout(showResults, 5000);
-        showDisruptions();
-        createPolyline();
-        showPosition();
+        console.log("dhors")
+        //const timeout = setTimeout(showResults, 10000);
+        if (!coords){
+            console.log("dedans")
+            showResults();
+            showDisruptions();
+            //showPosition();
+        }
+
+        if (coords && !linePoints){
+            createPolyline(coords);
+        }
 
         return () => {
-            clearTimeout(timeout);
+            //clearTimeout(timeout);
         };
     }, [coords]);
 
     const getData = () => {
         return disruptions;
     }
-
-    console.log(currentPosition);
     
     return (
         <View style={styles.container}>
             <View style={styles.inputsBoxContainer}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Ionicons name="arrow-back-outline" size={35} color="white" />
+                    <Ionicons name="arrow-back-outline" size={35} color="white" style={{marginLeft:10}}/>
                 </TouchableOpacity>
                 <View style={{flexDirection:'row',justifyContent:'center', alignItems:'center'}}>
                     <Text style={styles.title}>Trafic ligne {line}</Text>
                 </View>
                 <TouchableOpacity onPress={onOpen}>
-                    <Ionicons name="information-circle-outline" size={35} color="white" />
+                    <Ionicons name="information-circle-outline" size={40} color="white" />
                 </TouchableOpacity>
             </View>
+            {coords &&
             <MapView
                 style={styles.map}
                 provider={MapView.PROVIDER_GOOGLE}
@@ -229,7 +252,7 @@ const TrafficMap = ({ route, navigation }) => {
                 }}
             >
                 {
-                    coords.map(({ latitude, longitude, name, departure_time, arrival_time }) =>
+                   coords.map(({ latitude, longitude, name, stopSchedulesByDirection }) =>
                         <Marker
                             coordinate={{
                                 latitude: latitude,
@@ -243,27 +266,28 @@ const TrafficMap = ({ route, navigation }) => {
                                         <Text style={styles.calloutText}>{props.code} - </Text>
                                         <Text style={styles.calloutText}>{name}</Text>
                                     </View>
-                                    <View style={{ flexDirection: 'row' }}>
+                                    {stopSchedulesByDirection.map((direction) => {
+                                        <View style={{ flexDirection: 'row' }}>
                                         <View style={styles.timeContainer}>
                                             <Ionicons name="subway-outline" size={20} color={color} />
-                                            <Text style={styles.timeText}>D: {departure_time.substr(-6).substr(0, 2) + ":" + departure_time.substr(-6).substr(2, 2)}</Text>
-                                        </View>
-                                        <View style={styles.timeContainer}>
-                                            <Ionicons name="subway-outline" size={20} color={color} />
-                                            <Text style={styles.timeText}>A: {arrival_time.substr(-6).substr(0, 2) + ":" + arrival_time.substr(-6).substr(2, 2)}</Text>
+                                            <Text style={styles.timeText}>{direction.direction}</Text>
+                                            <Text style={styles.timeText}>{direction.nextArrival} {direction.nextArrival2}</Text>
                                         </View>
                                     </View>
+                                    })}
                                 </View>
                             </Callout>
                         </Marker>
                     )
                 }
                 
+                {linePoints &&
                 <Polyline
                     coordinates={linePoints}
                     strokeColor={color} // fallback for when `strokeColors` is not supported by the map-provider
                     strokeWidth={4}
                 />
+                }
                 {
                     currentPosition.map(({ latitude, longitude, direction }) => {
                         <Marker
@@ -277,6 +301,7 @@ const TrafficMap = ({ route, navigation }) => {
                     })
                 }
             </MapView>
+            }
             <Modalize
                 HeaderComponent={
                     <View style={styles.headerModalContainer}>
@@ -300,13 +325,14 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         //flexDirection: 'column',
-        margin: 1
     },
     inputsBoxContainer: {
         paddingHorizontal: 10,
-        paddingVertical: 10,
+        paddingTop: 45,
+        paddingBottom: 10,
         backgroundColor: "#FE596F",
-        borderRadius: 10,
+        borderBottomLeftRadius: 10,
+        borderBottomRightRadius: 10,
         flexDirection:'row',
         justifyContent:'space-between'
     },
