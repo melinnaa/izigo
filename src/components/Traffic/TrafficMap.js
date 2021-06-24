@@ -340,8 +340,8 @@ const styles = StyleSheet.create({
     title: {
         color: "#ffffff",
         fontSize: 18,
-        //fontFamily:"NunitoBold",
-        //fontWeight:"bold",
+        fontFamily:"NunitoBold",
+        fontWeight:"bold",
         textAlign: "center",
         padding: 2
     },
@@ -385,7 +385,6 @@ const styles = StyleSheet.create({
         width: 300,
         flexDirection: 'column',
     },
-
     calloutTitle: {
         padding: 3,
         flexDirection: 'row',

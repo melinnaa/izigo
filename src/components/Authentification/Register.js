@@ -245,18 +245,21 @@ const styles = StyleSheet.create({
         zIndex: 5
     },
     submitText: {
+        fontFamily: 'NunitoBold',
         color: '#fff',
         textAlign: 'center',
         fontSize: 25
     },
     submitTextLogin: {
+        fontFamily: 'NunitoBold',
         color: 'black',
-        top: "580%",
+        top: "500%",
         color: "#A0A0A0",
         textAlign: "center"
     },
     text: {
-        top: "1100%",
+        fontFamily: 'NunitoBold',
+        top: "920%",
     },
     containerLogo: {
         width: "100%",

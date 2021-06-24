@@ -1,4 +1,3 @@
-import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
 import Font, { useFonts } from "expo-font";
 import { StyleSheet, Text, View } from 'react-native';
@@ -10,7 +9,6 @@ import FavoritePage from './src/containers/FavoritePage';
 import ActualityPage from "./src/containers/ActualityPage";
 import AccountPage from './src/containers/AccountPage';
 import TrafficPage from './src/containers/TrafficPage';
-import Font, { useFonts } from "expo-font";
 
 
 const Tabs = createBottomTabNavigator();

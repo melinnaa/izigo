@@ -9,7 +9,7 @@ const Inputs = () => {
                     style={styles.input}
                     value={line}
                     onChangeText={setLine}
-                    placeholder="Ligne"
+                    placeholder="N° de ligne"
                     underlineColorAndroid="transparent"
                 />
                 <View style={styles.icon}>

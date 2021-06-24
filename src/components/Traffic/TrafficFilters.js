@@ -108,7 +108,6 @@ const TrafficFilters = ({ navigation }) => {
                 }
             })
         })
-
     }
 
     const showResultsStation = () => {
@@ -126,7 +125,6 @@ const TrafficFilters = ({ navigation }) => {
                 setListStation([...listStation, search]);
             })
         })
-
     }
 
 
@@ -218,7 +216,6 @@ const TrafficFilters = ({ navigation }) => {
         } catch (err) {
             console.log(err.response);
         }
-
     }
 
     const onRefresh = () => {
@@ -258,7 +255,7 @@ const TrafficFilters = ({ navigation }) => {
                             style={styles.input}
                             value={line}
                             onChangeText={setLine}
-                            placeholder="Ligne"
+                            placeholder="N° de ligne"
                             underlineColorAndroid="transparent"
                         />
                         <View style={styles.icon}>
@@ -292,7 +289,7 @@ const TrafficFilters = ({ navigation }) => {
                             style={styles.input}
                             value={line}
                             onChangeText={setLine}
-                            placeholder="Ligne"
+                            placeholder="N° de ligne"
                             underlineColorAndroid="transparent"
                         />
                         <View style={styles.icon}>
@@ -327,20 +324,18 @@ const TrafficFilters = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        //flexDirection: 'column',
-        margin: 1
     },
     inputsBoxContainer: {
         paddingHorizontal: 10,
-        paddingVertical: 30,
+        paddingVertical: 50,
         backgroundColor: "#FE596F",
         borderRadius: 10
     },
     title: {
         color: "#ffffff",
         fontSize: 18,
-        //fontFamily:"Nunito",
-        //fontWeight:"bold",
+        fontFamily:"Nunito",
+        fontWeight:"bold",
         textAlign: "center",
         padding: 5
     },
