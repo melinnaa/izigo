@@ -1,8 +1,10 @@
 {
   "expo": {
-    "name": "izigo_project",
-    "slug": "izigo_project",
-    "version": "1.0.0",
+    "name": "IziGo",
+    "description": "En un clin d'oeil, IziGo vous affiche toutes les options de transport disponibles autour de vous ainsi que les prochains horaires de départ – accès instantané à l'information dont vous avez le plus besoin. Avec IziGo, planifiez rapidement un nouveau trajet, retrouvez vos itinéraires préférés, connaître l'état du trafic en temps réel et encore !",
+    "version": "2.0.0",
+    "icon": "./src/assets/splash.png",
+    "githubUrl": "https://github.com/melinnaa/izigo",
     "orientation": "portrait",
     "splash": {
       "image": "./src/assets/splash.png",
