@@ -1,11 +1,15 @@
-import React, {useState} from "react";
-import { StyleSheet, Text, View, TouchableOpacity, FlatList } from 'react-native';
+import React, { useState } from "react";
+import { StyleSheet, Text, View, TouchableOpacity, FlatList, Image, ScrollView, SafeAreaView } from 'react-native';
 import Ionicons from "react-native-vector-icons/Ionicons";
+import { StackActions } from '@react-navigation/native';
 
 const FavoriteDetails = ({ route, navigation }) => {
     const { props } = route.params;
-    const [transportName,setTransportName] = useState("");
-    console.log(props.sections);
+    const [transportName, setTransportName] = useState("");
+    const  itinerary = JSON.stringify(props.sections);
+    var jsonSections = JSON.parse(props.sections);
+
+    //console.log(props.sections); 
     return (
         <View style={styles.container}>
             <View style={styles.titleContainer}>
@@ -26,63 +30,74 @@ const FavoriteDetails = ({ route, navigation }) => {
             </View>
             <View style={styles.itemsContainer}>
                 <Ionicons name="navigate-outline" size={30} color="#000000" />
-                <Text style={styles.itemsText}>Parcours préférés</Text>
-                <Text></Text>
+                <Text style={[styles.itemsText, { left: -170 }]}>Parcours préférés</Text>
             </View>
+            <SafeAreaView>
+                <ScrollView>
+                    {
+                        jsonSections.map((section) => {
+                            if (section.from && section.to) {
+                                return (
+                                    <View style={styles.connectionContainer}>
+                                        <Text style={styles.imageContainer}>
+                                            {section.type == "street_network" || (section.type == "transfer" && section.transfer_type == "walking") ? <Ionicons name={"walk"} size={25} /> : ""}
+                                            {section.display_informations && section.display_informations.commercial_mode == "RER" ? <Image source={{ uri: 'https://github.com/melinnaa/izigo/blob/main/src/assets/img/transports/rer/RER' + section.display_informations.label + '.png?raw=true' }} style={{ width: 20, height: 20, alignSelf: 'baseline', }} /> : " "}
+                                            {section.display_informations && section.display_informations.commercial_mode === "Bus" ?
+                                                <Text style={[styles.busLabel, styles.transportLabel, { backgroundColor: "#" + section.display_informations.color, color: "#" + section.display_informations.text_color }]}> {section.display_informations.label} </Text>
+                                                : " "}
+                                            {section.display_informations && section.display_informations.commercial_mode === "Métro" ?
+                                                <Image source={{ uri: 'https://github.com/melinnaa/izigo/blob/main/src/assets/img/transports/metro/Metro' + section.display_informations.label + '.png?raw=true' }} style={{ width: 20, height: 20 }} />
+                                                : " "}
+                                            {section.display_informations && section.display_informations.commercial_mode === "Train" ?
+                                                <Text style={[styles.busLabel, styles.transportLabel, { backgroundColor: "#" + section.display_informations.color, color: "#" + section.display_informations.text_color, width: 20, height: 20 }]}> {section.display_informations.label} </Text>
+                                                : " "}
+                                        </Text>
+                                        <Text style={styles.connectionsText}>{section.from.name}</Text>
 
-            { 
-                JSON.parse(props.sections).map((section) =>
-                    <View style={styles.connectionContainer}>
-                        <Text style={styles.lineText}>{section.arrival_date_time}</Text>
-                        <Text style={styles.connectionsText}>{section.from.name}</Text>
-                        <Text style={styles.connectionsText}> {">"} </Text>
-                        <Text style={styles.connectionsText}>{section.to.name}</Text>
-                    </View> 
-
-                )
-            }
-            <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.buttonItinerary}>
-                    <Text style={styles.buttonText}>Voir l'itinéraire</Text>
-                </TouchableOpacity>
-            </View>
-            <View style={styles.itemsContainer}>
-                <Ionicons name="people-outline" size={30} color="#000000" />
-                <Text style={styles.itemsText}>Affluence</Text>
-                <Text style={styles.dataText}>{props.crowd}</Text>
-            </View>
-            <View style={styles.itemsContainer}>
-                <Ionicons name="calendar-outline" size={30} color="#000000" />
-                <Text style={styles.itemsText}>Utilisation moyenne dans la semaine</Text>
-                <Text style={styles.dataText}>{props.usage}</Text>
-            </View>
+                                        <View style={styles.step_separator}>
+                                            <Ionicons name="radio-button-on" size={5} color="grey" />
+                                        </View>
+                                        <Text style={styles.connectionsText}>{section.to.name}</Text>
+                                    </View>
+                                )
+                            }
+                        }
+                        )
+                    }
+                    <View style={styles.buttonContainer} >
+                        <TouchableOpacity style={styles.buttonItinerary} onPress={() => navigation.dispatch(StackActions.push('Itinerary', { itinerary: itinerary, isFavorite: true }))}>
+                            <Text style={styles.buttonText}>Voir l'itinéraire</Text>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
+            </SafeAreaView>
         </View>
     )
 }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: 'white',
     },
     titleContainer: {
-        paddingVertical: 30,
+        paddingVertical: 45,
         marginBottom: 15,
         backgroundColor: "#FE596F",
         borderRadius: 30,
         flexDirection: "row",
-        //justifyContent:"space-between"
+        justifyContent: "space-between"
     },
     buttonBack: {
-        paddingLeft: 10
+        paddingLeft: 10,
+        zIndex: 5
     },
     titleText: {
         color: '#ffffff',
-        //fontFamily: 'NunitoBold',
+        fontFamily: 'NunitoBold',
         fontSize: 18,
-        //alignSelf:"center",
         justifyContent: "center",
         alignItems: "center",
-        paddingHorizontal: 60
+        paddingHorizontal: 80
     },
     itemsContainer: {
         flexDirection: 'row',
@@ -90,56 +105,65 @@ const styles = StyleSheet.create({
         borderTopWidth: 1,
         borderTopColor: "rgba(0, 0, 0, 0.2)",
         paddingVertical: 20,
-        paddingHorizontal: 10
+        paddingHorizontal: 20
     },
     itemsText: {
-        //fontFamily: 'NunitoBold',
+        fontFamily: 'NunitoBold',
         fontSize: 14,
-        //alignSelf:'flex-start'
+        paddingTop: 5,
         justifyContent: "center",
         alignItems: "center"
     },
     dataText: {
-        //fontFamily: 'NunitoBold',
+        fontFamily: 'NunitoBold',
         fontSize: 18,
         paddingRight: 5
     },
     connectionContainer: {
-        paddingTop: 40,
+        paddingTop: 20,
         paddingBottom: 10,
-        paddingLeft: 30,
+        paddingLeft: 60,
         textAlign: "center",
         flexDirection: "row",
         width: 200,
-
+    },
+    imageContainer: {
+        paddingRight: 10,
     },
     connectionsText: {
-        //fontFamily: "NunitoBold",
+        fontFamily: "NunitoBold",
         fontSize: 14
     },
     lineText: {
         paddingRight: 10,
-        //fontFamily: 'NunitoBold',
+        fontFamily: 'NunitoBold',
         fontSize: 14,
     },
     buttonContainer: {
         justifyContent: "center",
         alignItems: "center",
-        //backgroundColor:"#FE596F",
-        marginVertical: 15
+        marginVertical: 5
     },
     buttonItinerary: {
-        backgroundColor: "#FE596F",
-        width: 140,
-        height: 60,
-        borderRadius: 6,
-        paddingVertical: 20,
-        paddingHorizontal: 20
+        marginRight: 50,
+        marginLeft: 40,
+        marginTop: 20,
+        padding: 15,
+        backgroundColor: '#FE596F',
+        borderRadius: 40,
+        borderWidth: 1,
+        borderColor: '#fff'
     },
     buttonText: {
-        //fontFamily: 'NunitoBold',
-        fontSize: 14,
-        color: "white"
+        fontFamily: 'NunitoBold',
+        color: '#fff',
+        textAlign: 'center',
+        fontSize: 20
+    },
+    step_separator: {
+        top: -7,
+        marginHorizontal: 7,
+        alignSelf: 'center'
     }
 });
 

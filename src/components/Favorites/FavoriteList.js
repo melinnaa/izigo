@@ -6,6 +6,7 @@ import "firebase/auth";
 
 const FavoriteList = ({ navigation }) => {
     const user = firebase.auth().currentUser;
+
     //console.log(firebase.auth().currentUser);
     const userID = firebase.auth().currentUser.email
     var nameUser = userID.substring(0, userID.lastIndexOf("@"));
@@ -14,57 +15,48 @@ const FavoriteList = ({ navigation }) => {
     const [myData, setMyData] = useState([])
 
     const db = firebase.firestore();
-
     useEffect(() => {
+        const unsubscribe = navigation.addListener('tabPress', e => {
+            // Prevent default behavior
+            e.preventDefault();
+
+            if (user == null) {
+                alert('Default behavior prevented');
+                navigation.navigate('AccountPage')
+            } else {
+                navigation.navigate('FavoritePage')
+            }
+
+        });
+
         const dataFavoris = []
         db.collection('Courses')
             .where("idUser", "==", userUID)
             .get()
             .then(snapshot => {
                 snapshot.docs.forEach(favoris => {
-                    let currentID = favoris.id
-                    let appObj = { ...favoris.data(), ['id']: currentID }
+                    //let currentID = favoris.id
+                    //let appObj = { ...favoris.data(), ['id']: currentID }
                     //dataFavoris.push(appObj)
 
                     dataFavoris.push(favoris.data())
+                    //console.log(dataFavoris);
                 })
                 setMyData(dataFavoris)
             })
-    }, [myData])
-    /*
-        if (user) {
-            //console.log(user.uid);
-            db.collection("Courses").where("idUser","==",user.uid)
-                .get()
-                .then((querySnapshot) => {
-                    querySnapshot.docs.map((doc) => {
-                        //console.log(querySnapshot)
-                        //console.log(doc.data());
-                        data = doc.data();
-                        
-                    });
-                    
-                })
-                .catch((error) => {
-                    console.log("Error getting documents: ", error);
-                });
-                setMyData([...myData,data]); 
-                 
-        }
-        else {
-            navigation.navigate('Login');
-        }
-    */
+        return unsubscribe;
+    }, [myData, navigation])
+
     const signOut = async () => {
         try {
             await firebase.auth().signOut();
             const user = firebase.auth().currentUser;
             alert("Vous êtes bien déconnecter !");
+            navigation.navigate('Login');
         } catch (e) {
             alert("Erreur")
         }
         navigation.navigate('Login');
-
     }
 
 
@@ -135,7 +127,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         paddingRight: 20,
     },
-    chevronContainer:{
+    chevronContainer: {
         paddingRight: 0,
         paddingRight: 10
     },
