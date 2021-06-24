@@ -61,6 +61,9 @@ const FavoriteList = ({ navigation }) => {
                 <Text style={styles.favorisText}>Mes Favoris</Text>
                 <Ionicons name="heart" size={35} color="#FE596F" />
             </View>
+            <TouchableOpacity onPress={()=> navigation.navigate("FavoriteDetails")}>
+                <Text>Test</Text>
+            </TouchableOpacity>
             <FlatList
                 data={myData}
                 keyExtractor={(item) => item.id}
@@ -79,6 +82,7 @@ const FavoriteList = ({ navigation }) => {
                 )}
 
             />
+           
             <StatusBar style="auto" />
         </View>
     )
