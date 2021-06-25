@@ -33,11 +33,12 @@ const FavoriteDetails = ({ route, navigation }) => {
             </View>
             <SafeAreaView>
                 <ScrollView>
+                    <View style={{marginBottom: 500}}>
                     {
                         jsonSections.map((section) => {
                             if (section.from && section.to) {
                                 return (
-                                    <View style={styles.connectionContainer}>
+                                    <View style={[styles.connectionContainer]}>
                                         <Text style={styles.imageContainer}>
                                             {section.type == "street_network" || (section.type == "transfer" && section.transfer_type == "walking") ? <Ionicons name={"walk"} size={25} /> : ""}
                                             {section.display_informations && section.display_informations.commercial_mode == "RER" ? <Image source={{ uri: 'https://github.com/melinnaa/izigo/blob/main/src/assets/img/transports/rer/RER' + section.display_informations.label + '.png?raw=true' }} style={{ width: 20, height: 20, alignSelf: 'baseline', }} /> : " "}
@@ -63,13 +64,14 @@ const FavoriteDetails = ({ route, navigation }) => {
                         }
                         )
                     }
-                    <View style={styles.buttonContainer} >
-                        <TouchableOpacity style={styles.buttonItinerary} onPress={() => show()}>
-                            <Text style={styles.buttonText}>Voir l'itinéraire</Text>
-                        </TouchableOpacity>
                     </View>
                 </ScrollView>
             </SafeAreaView>
+            <View style={styles.buttonContainer} >
+                    <TouchableOpacity style={styles.buttonItinerary} onPress={() => show()}>
+                        <Text style={styles.buttonText}>Voir l'itinéraire</Text>
+                    </TouchableOpacity>
+            </View>
         </View>
     )
 
@@ -144,9 +146,12 @@ const styles = StyleSheet.create({
         fontSize: 14,
     },
     buttonContainer: {
-        justifyContent: "center",
+        position: 'absolute',
+        justifyContent: "flex-end",
         alignItems: "center",
-        marginVertical: 5
+        left: 30,
+        right:30,
+        bottom: 120
     },
     buttonItinerary: {
         marginRight: 50,

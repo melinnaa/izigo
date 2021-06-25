@@ -78,7 +78,7 @@ const Login = ({ navigation }) => {
             const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
             //console.log(userCredential);
 
-            return navigation.goBack();
+            return navigation.navigate('FavoritePage');
             //return navigation.goBack();
         }
         catch (err) {
@@ -163,14 +163,6 @@ const Login = ({ navigation }) => {
                     style={styles.icon}
                     onPress={() => onGoogleButtonPress()}>
                     <Ionicons name={"logo-google"} size={40} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.icon}>
-                    <Ionicons name={"logo-twitter"} size={40} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.icon}>
-                    <Ionicons name={"logo-instagram"} size={40} />
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.icon}
@@ -274,7 +266,7 @@ const styles = StyleSheet.create({
         width: "100%",
         flexDirection: 'row',
         flexWrap: 'wrap',
-        paddingLeft: "8%",
+        justifyContent: 'center',
         top: "45%"
     },
     icon: {

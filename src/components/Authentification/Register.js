@@ -155,14 +155,6 @@ const Register = ({ navigation }) => {
                     <Ionicons name={"logo-google"} size={40} />
                 </TouchableOpacity>
                 <TouchableOpacity
-                    style={styles.icon}>
-                    <Ionicons name={"logo-twitter"} size={40} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.icon}>
-                    <Ionicons name={"logo-instagram"} size={40} />
-                </TouchableOpacity>
-                <TouchableOpacity
                     style={styles.icon}
                     onPress={() => onAppleButtonPress()}>
                     <Ionicons name={"logo-apple"} size={40} />
@@ -265,7 +257,7 @@ const styles = StyleSheet.create({
         width: "100%",
         flexDirection: 'row',
         flexWrap: 'wrap',
-        paddingLeft: "8%",
+        justifyContent: 'center',
         top: "45%"
     },
     icon: {

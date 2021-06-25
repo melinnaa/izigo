@@ -95,7 +95,7 @@ const App = () => {
             }
           }}
         >
-          <Tabs.Screen name="HomePage" options={{unmountOnBlur: true}}>
+          <Tabs.Screen name="HomePage">
             {(props) => <HomePage {...props} />}
           </Tabs.Screen>
           <Tabs.Screen name="TrafficPage">

@@ -89,7 +89,7 @@ const InfoTwitter = ({ navigation, route }) => {
         })
     }
     return (
-        <View style={styles.container}>
+        <View style={[styles.container]}>
             <Ionicons
                 name={'arrow-back'} size={35}
                 title=""
@@ -112,7 +112,7 @@ const InfoTwitter = ({ navigation, route }) => {
             <View style={styles.rectangle}></View>
             <Text style={styles.text}>Trafic sur {title}</Text>
             <FlatList
-                style={styles.flatlist}
+                style={[styles.flatlist]}
                 data={dataTransport}
                 renderItem={({ item }) => (
                     <View>
@@ -137,6 +137,7 @@ const InfoTwitter = ({ navigation, route }) => {
                     </View>
                 )}
                 keyExtractor={item => item}
+
             />
             <View style={styles.screenButton}>
                 <TouchableHighlight
@@ -247,7 +248,6 @@ const styles = StyleSheet.create({
     screenButton: {
         justifyContent: 'center',
         alignItems: 'center',
-        top: "3%"
     },
     submit: {
         marginRight: 50,
