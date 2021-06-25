@@ -31,6 +31,7 @@ const App = () => {
     NunitoSemiBoldItalic: require("./src/assets/fonts/Nunito-SemiBoldItalic.ttf")
   });
 
+
   if (!loaded) {
     return null;
   }
@@ -38,7 +39,7 @@ const App = () => {
   return (
     <NavigationContainer>
         <Tabs.Navigator
-          screenOptions={({ route }) => ({
+          screenOptions={({ navigation, route }) => ({
             tabBarIcon: ({ focused, color, size }) => {
               let iconName;
               switch (route.name) {
@@ -94,13 +95,13 @@ const App = () => {
             }
           }}
         >
-          <Tabs.Screen name="HomePage">
+          <Tabs.Screen name="HomePage" options={{unmountOnBlur: true}}>
             {(props) => <HomePage {...props} />}
           </Tabs.Screen>
           <Tabs.Screen name="TrafficPage">
             {(props) => <TrafficPage {...props} />}
           </Tabs.Screen>
-          <Tabs.Screen name="FavoritePage">
+          <Tabs.Screen name="FavoritePage" options={{unmountOnBlur: true}}>
             {(props) => <FavoritePage {...props} />}
           </Tabs.Screen>
           <Tabs.Screen name="ActualityPage">

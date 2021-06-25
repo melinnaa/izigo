@@ -6,7 +6,6 @@ import { StackActions } from '@react-navigation/native';
 const FavoriteDetails = ({ route, navigation }) => {
     const { props } = route.params;
     const [transportName, setTransportName] = useState("");
-    const  itinerary = JSON.stringify(props.sections);
     var jsonSections = JSON.parse(props.sections);
 
     //console.log(props.sections); 
@@ -65,7 +64,7 @@ const FavoriteDetails = ({ route, navigation }) => {
                         )
                     }
                     <View style={styles.buttonContainer} >
-                        <TouchableOpacity style={styles.buttonItinerary} onPress={() => navigation.dispatch(StackActions.push('Itinerary', { itinerary: itinerary, isFavorite: true }))}>
+                        <TouchableOpacity style={styles.buttonItinerary} onPress={() => show()}>
                             <Text style={styles.buttonText}>Voir l'itinéraire</Text>
                         </TouchableOpacity>
                     </View>
@@ -73,6 +72,11 @@ const FavoriteDetails = ({ route, navigation }) => {
             </SafeAreaView>
         </View>
     )
+
+    function show(){
+        props.duration = Math.round(jsonSections[0].duration / 60);
+        navigation.navigate('Itinerary', { itinerary: props, isFavorite: true })
+    }
 }
 const styles = StyleSheet.create({
     container: {

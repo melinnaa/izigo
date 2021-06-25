@@ -37,7 +37,7 @@ const FavoriteList = ({ navigation }) => {
         try {
             await firebase.auth().signOut();
             const user = firebase.auth().currentUser;
-            alert("Vous êtes bien déconnecter !");
+            alert("Vous êtes bien déconnecté !");
             navigation.navigate('Login');
         } catch (e) {
             alert("Erreur")
@@ -52,18 +52,17 @@ const FavoriteList = ({ navigation }) => {
             <Text style={styles.nameText}>{nameUser}</Text>
             <TouchableOpacity
                 activeOpacity={0.7}
-                style={styles.signOutButton}
                 onPress={() => signOut()}
             >
-                <Text style={styles.submitText}>Se déconnecter</Text>
+                <View style={styles.signOutButton}>
+                    <Ionicons name="log-out-outline" size={35} color={"black"}/>
+                    <Text style={styles.submitText} >Se déconnecter</Text>
+                </View>
             </TouchableOpacity>
             <View style={styles.favorisContainer}>
                 <Text style={styles.favorisText}>Mes Favoris</Text>
                 <Ionicons name="heart" size={35} color="#FE596F" />
             </View>
-            <TouchableOpacity onPress={()=> navigation.navigate("FavoriteDetails")}>
-                <Text>Test</Text>
-            </TouchableOpacity>
             <FlatList
                 data={myData}
                 keyExtractor={(item) => item.id}
@@ -148,12 +147,15 @@ const styles = StyleSheet.create({
         paddingRight: 20
     },
     signOutButton: {
-        top: "-13%",
-        left: "70%",
+        top: "-15%",
+        right:30,
         color: "#A0A0A0",
         textAlign: "center",
         borderRadius: 6,
-        paddingVertical: 5
+        paddingVertical: 5,
+        flexDirection: "row",
+        alignItems: 'center',
+        justifyContent: "flex-end"
     }
 })
 

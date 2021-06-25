@@ -78,7 +78,7 @@ const Login = ({ navigation }) => {
             const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
             //console.log(userCredential);
 
-            return navigation.navigate('FavoritePage');
+            return navigation.goBack();
             //return navigation.goBack();
         }
         catch (err) {
@@ -93,7 +93,7 @@ const Login = ({ navigation }) => {
                     return Alert.alert('Le mot de passe est incorrect. Réessayez ou identifiez-vous avec les réseaux sociaux.');
                     break;
                 case 'auth/invalid-uid':
-                    return Alert.alert('Un compte epas existe');
+                    return Alert.alert('Compte non trouvé');
                     break;
             }
             console.log(err.code);
