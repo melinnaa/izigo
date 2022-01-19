@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react"
-import { StyleSheet, View, Text, TouchableHighlight, Linking, Image, FlatList, Button } from 'react-native';
+import { StyleSheet, View, Text, TouchableHighlight, Linking, Image, FlatList, Button, ScrollView } from 'react-native';
 import axios from "axios";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import Moment from 'moment';
 
 const InfoTwitter = ({ navigation, route }) => {
     const [idTransport, setidTransport] = useState();
@@ -9,7 +10,8 @@ const InfoTwitter = ({ navigation, route }) => {
     const [ImageTransport, setImageTransport] = useState();
 
     const title = route.params;
- 
+    const image = route.params;
+    
     const getImageTransport = async (idTransport) => {
         try {
             const resp = await axios.get(`https://api.twitter.com/1.1/users/show.json?user_id=${idTransport}`, {
@@ -28,7 +30,7 @@ const InfoTwitter = ({ navigation, route }) => {
 
     const getDataTransport = async (idTransport) => {
         try {
-            const resp = await axios.get("https://api.twitter.com/2/users/" + idTransport + "/tweets?tweet.fields=context_annotations", {
+            const resp = await axios.get("https://api.twitter.com/2/users/" + idTransport + "/tweets?tweet.fields=created_at", {
                 headers: {
                     Authorization: `Bearer ${'AAAAAAAAAAAAAAAAAAAAABABQgEAAAAA9SXFVGSLYdYaBrn9jGFD6queSrY%3DV5KKLwEUJKio24ggY4JjnuRMTa33z5uWDhqKPQBTyCaazHjEkL'}`,
                     "Access-Control-Allow-Origin": "http://localhost:19006/",
@@ -76,44 +78,42 @@ const InfoTwitter = ({ navigation, route }) => {
             const data2 = getImageTransport(id);
             Promise.resolve(data2).then((image_url) => {
                 setImageTransport(image_url);
-                //get all data of the transport
-                const data3 = getDataTransport(id);
-                Promise.resolve(data3).then((mydata) => {    
-                    const tab = [];
-                    for (var i = 0; i < 3; i++) {
-                        tab.push(mydata[i].text)
-                    }
-                    setdataTransport(tab);
-                })
+            })
+            //get all data of the transport
+            const data3 = getDataTransport(id);
+            Promise.resolve(data3).then((mydata) => {    
+                const tab = [];
+                for (var i = 0; i < 3; i++) {
+                    tab.push(mydata[i])
+                }
+                console.log(tab);
+                setdataTransport(tab);
             })
         })
     }
     return (
         <View style={[styles.container]}>
-            <Ionicons
-                name={'arrow-back'} size={35}
-                title=""
-                style={styles.returnButton}
-                onPress={() => {
-                    navigation.goBack();
-                }}
-            />
-            <Ionicons
-                name={'refresh'} size={35}
-                title=""
-                style={styles.refreshButton}
-                //onPress={refreshPage}
-            />
-            <Text style={styles.title}>Info Traffic</Text>
-            <Image
-                style={styles.ImageBigTransport}
-                source={{ uri: ImageTransport }}
-            />
-            <View style={styles.rectangle}></View>
-            <Text style={styles.text}>Trafic sur {title}</Text>
+            <View style={styles.rectangle}>
+                <Ionicons
+                    name={'arrow-back'} size={35}
+                    title=""
+                    style={styles.returnButton}
+                    onPress={() => {
+                        navigation.goBack();
+                    }}
+                />
+                <Ionicons
+                    name={'refresh'} size={35}
+                    title=""
+                    style={styles.refreshButton}
+                    //onPress={refreshPage}
+                />
+                <Text style={styles.text}>Trafic sur {title}</Text>
+            </View>
             <FlatList
                 style={[styles.flatlist]}
                 data={dataTransport}
+                keyExtractor={({ id }, index) => id}
                 renderItem={({ item }) => (
                     <View>
                         <Image
@@ -122,22 +122,23 @@ const InfoTwitter = ({ navigation, route }) => {
                         />
                         <View style={styles.tweet}>
                             <View style={styles.descriptionTweet}>
-                                <Text style={styles.titleLigne}>{title}   <Image style={styles.imageCheck} source={require('../../assets/img/transports/check.png')} /><Text style={{ color: "#D0D0D0", fontSize: 13 }}>@{title}</Text></Text>
-                                <Text style={styles.textDetail}>{item}</Text>
+                                <Text style={styles.titleLigne}>{title}
+                                    <Image style={styles.imageCheck} source={require('../../assets/img/transports/check.png')} />
+                                    <Text style={{ color: "#D0D0D0", fontSize: 13 }}>{Moment(item.created_at).format('DD/MM/YYYY, h:mm')}</Text>
+                                </Text>
+                                <Text style={styles.textDetail}>{item.text}</Text>
                             </View>
                         </View>
                         <View
                             style={{
                                 borderBottomColor: '#D0D0D0',
-                                borderBottomWidth: 1,
-                                width: "97%",
+                                borderBottomWidth: 0.9,
+                                width: "100%",
                                 top: "-20%"
                             }}
-                        ></View>
+                        ></View>     
                     </View>
                 )}
-                keyExtractor={item => item}
-
             />
             <View style={styles.screenButton}>
                 <TouchableHighlight
@@ -164,14 +165,16 @@ const styles = StyleSheet.create({
         margin: 1
     },
     returnButton: {
-        top: "5%",
+        top: "40%",
         zIndex: 2,
-        left: "5%",
+        left: "8%",
+        color: '#fff'
     },
     refreshButton: {
-        top: "5%",
+        top: "40%",
         zIndex: 2,
-        left: "5%",
+        left: "8%",
+        color: '#fff'
     },
     title: {
         position: 'absolute',
@@ -192,10 +195,10 @@ const styles = StyleSheet.create({
     rectangle: {
         position: 'absolute',
         width: 500,
-        height: 80,
+        height: 150,
+        top: -10,
         left: -20,
         zIndex: 2,
-        top: "15%",
         backgroundColor: '#FE596F',
         borderRadius: 24,
         shadowColor: '#000',
@@ -211,15 +214,11 @@ const styles = StyleSheet.create({
     },
     text: {
         fontFamily: 'NunitoBold',
-        position: 'absolute',
-        left: '27%',
-        right: '5.6%',
-        top: '18%',
-        bottom: '79.56%',
+        left: '25%',
         fontStyle: 'normal',
         fontWeight: 'bold',
         zIndex: 3,
-        fontSize: 20,
+        fontSize: 25,
         display: 'flex',
         alignItems: 'center',
         color: '#FFFFFF',
@@ -229,8 +228,10 @@ const styles = StyleSheet.create({
         top: "-25%",
     },
     flatlist: {
+        height: 900,
+        flexGrow: 0,
         marginLeft: 0,
-        top: "12%",
+        top: "20%",
     },
     textDetail: {
         padding: 10,
@@ -252,9 +253,8 @@ const styles = StyleSheet.create({
     submit: {
         marginRight: 50,
         marginLeft: 40,
-        marginTop: 10,
-        top: "-110%",
         padding: 15,
+        top: -120,
         backgroundColor: '#FE596F',
         borderRadius: 40,
         borderWidth: 1,
