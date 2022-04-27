@@ -1,38 +1,62 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { StackActions } from '@react-navigation/native';
-import { StyleSheet, Text, View, Image, Dimensions, TouchableOpacity, Button, FlatList, Alert } from 'react-native';
+import { StyleSheet, Text, View, Image, Dimensions, TouchableOpacity, Button, FlatList, Alert, Animated, TouchableNativeFeedbackBase } from 'react-native';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import axios from 'axios';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import DatePicker from 'react-native-datepicker'
 
-const Search = ({ navigation }) => {
-
+const Search = ({ navigation, route }) => {
     const [isShowingResults, setIsShowingResults] = useState(false)
     const [departureIsCurrent, setDepartureIsCurrent] = useState(false);
     const [arrivalIsCurrent, setArrivalIsCurrent] = useState(false);
+    const [departureIsFavorite, setDepartureIsFavorite] = useState(false);
+    const [arrivalIsFavorite, setArrivalIsFavorite] = useState(false);
     const [errorMsg, setErrorMsg] = useState(null);
+    const [uniqueId, setUniqueId] = useState(0);
+    const [departureIsNow, setDepartureIsNow] = useState(true);
 
-    const [departure, setDeparture] = useState({
+    const animatePress = useRef(new Animated.Value(1)).current;
+
+    const defaultDeparture = {
         name: "",
         latitude: 48.8534,
         longitude: 2.3488,
         latitudeDelta: 0.09,
         longitudeDelta: 0.04
-    });
+    
+    }
 
-    const [arrival, setArrival] = useState({
+    const defaultArrival = {
         name: "",
         latitude: 48.8534,
         longitude: 2.3488,
         latitudeDelta: 0.09,
         longitudeDelta: 0.04
-    });
+    }
 
+    const [departure, setDeparture] = useState(defaultDeparture);
+
+    const [arrival, setArrival] = useState(defaultArrival);
+
+    const [favoriteParam, setFavoriteParam] = useState();
+    
     const [itineraries, setItineraries] = useState({
         //
     })
+
+    useEffect(() => {
+        if (route.params && route.params.favorite != favoriteParam) {
+            setFavoriteParam(route.params.favorite);
+            setDeparture(route.params.favorite.departure);
+            setArrival(route.params.favorite.arrival);
+            setDepartureIsFavorite(true);
+            setArrivalIsFavorite(true);
+            setDepartureIsNow(true);
+        }
+    }, [route.params]);
 
     const getCurrentPosition = async (field) => {
         let { status } = await Location.requestForegroundPermissionsAsync();
@@ -80,8 +104,10 @@ const Search = ({ navigation }) => {
         }
     }
 
-    const removeCurrentPosition = (field) => {
+    const cleanAdressInput = (field) => {
         if (field == "departure") {
+            setDepartureIsCurrent(false);
+            setDepartureIsFavorite(false);
             setDeparture({
                 name: "",
                 latitude: 48.8534,
@@ -89,9 +115,10 @@ const Search = ({ navigation }) => {
                 latitudeDelta: 0.09,
                 longitudeDelta: 0.04
             });
-            setDepartureIsCurrent(false)
         }
         else if (field == "arrival") {
+            setArrivalIsCurrent(false);
+            setArrivalIsFavorite(false);
             setArrival({
                 name: "",
                 latitude: 48.8534,
@@ -99,23 +126,11 @@ const Search = ({ navigation }) => {
                 latitudeDelta: 0.09,
                 longitudeDelta: 0.04
             });
-            setArrivalIsCurrent(false)
         }
     }
 
     const showResults = () => {
-        if (!arrival.name || !departure.name) {
-            Alert.alert(
-                "Remplir tous les champs",
-                "Veuillez remplir tous les champs",
-                [
-                    {
-                        text: "OK"
-                    }
-                ]
-            );
-        }
-        else {
+        if (arrival.name && departure.name) {
             const data = fetchData();
             Promise.resolve(data).then((response) => {
                 const itineraries = new Array;
@@ -131,17 +146,24 @@ const Search = ({ navigation }) => {
 
     const fetchData = async () => {
         try {
-            const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/journeys?from=" + departure.longitude + "%3B" + departure.latitude + "&to=" + arrival.longitude + "%3B" + arrival.latitude + "&", {
+            if (departureIsNow) {
+                const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/journeys?from=" + departure.longitude + "%3B" + departure.latitude + "&to=" + arrival.longitude + "%3B" + arrival.latitude + "&", {
                 headers: {
                     'Authorization': `7a9c06ed-e0b6-4bc3-a7da-f27d4cbee972`,
-                }
-            })
-            return resp
+                }})
+                return resp
+            }
+            else {
+                const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/journeys?from=" + departure.longitude + "%3B" + departure.latitude + "&to=" + arrival.longitude + "%3B" + arrival.latitude + "&datetime=" + formateDateForApi(date, time), {
+                headers: {
+                    'Authorization': `7a9c06ed-e0b6-4bc3-a7da-f27d4cbee972`,
+                }})
+                return resp
+            }
 
         } catch (err) {
             console.log(err.response);
             Alert.alert(
-                "Pas d'itinéraire",
                 "Aucun itinéraire n'a été trouvé",
                 [
                     {
@@ -153,7 +175,6 @@ const Search = ({ navigation }) => {
     }
 
     const formatItinerary = (itinerary) => {
-
         return {
             id: guidGenerator(),
             departure: departure,
@@ -187,40 +208,65 @@ const Search = ({ navigation }) => {
         return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
     }
 
-    const time_convert = (num) => { 
+    const convertMinutesInHours = (num) => { 
         var hours = Math.floor(num / 60);  
         var minutes = num % 60;
         return hours + "h" + minutes;         
     }
 
+    const getDateMonthYear = (date) => {
+        var dateString = ('0'+new Date(date).getDate()).slice(-2)+"-"+('0'+(new Date(date).getMonth()+1)).slice(-2)+"-"+new Date(date).getFullYear();
+        return dateString
+    }
+
+    const [date, setDate] = useState(getDateMonthYear(new Date()));
+    const [time, setTime] = useState(('0'+new Date().getHours()).slice(-2)+":"+('0'+new Date().getMinutes()).slice(-2));
+    
+
+    const selectDate = () => {
+        Animated.event(animatePress, {
+            useNativeDriver: true // Add This line
+        }).start();
+    }
+
+    const formateDateForApi = (dateString, timeString) => {
+        var dateSplit = dateString.split("-");
+        var date = dateSplit[0];
+        var month = dateSplit[1];
+        var year = dateSplit[2];
+        var timeSplit = timeString.split(":");
+        var hours = timeSplit[0];
+        var minutes = timeSplit[1];
+        return year+month+date+"T"+hours+minutes+'00'
+    }
+
+    useEffect(() => {
+        showResults();
+    }, [departure, arrival, time, date, departureIsNow]);
+
     return (
-        <View style={styles.container}>
+        <View style={styles.container} key={uniqueId}>
             <View style={styles.inputsBoxContainer}>
                 <View style={styles.closeIcon}>
                     <Ionicons name="close" size={28} color="white" onPress={() => navigation.navigate("Main")} />
                 </View>
                 <Text style={styles.title}>Où allons-nous ?</Text>
-
-                {departureIsCurrent == true &&
-                    <View style={[styles.inputContainer, { marginHorizontal: 20 }]}>
-                        <TouchableOpacity style={styles.locationIcon} onPress={() => removeCurrentPosition("departure")}>
-                            <Ionicons name="locate-outline" size={28} color="white" />
+                    <View style={[styles.inputContainer, {marginHorizontal: (departureIsCurrent || departureIsFavorite) ? 20 : 0 }]}>
+                        <TouchableOpacity style={styles.locationIcon} onPress={() => getCurrentPosition("departure")}>
+                            <Ionicons name="locate-outline" size={28} color={departureIsCurrent == true ? "lightblue" : "white"} />
                         </TouchableOpacity>
+                        {(departureIsCurrent == true || departureIsFavorite == true) &&
                         <View style={styles.currentLocationText}>
                             <Text> {departure.name} </Text>
-                        </View>
-                    </View>
-                }
-                {departureIsCurrent == false &&
-                    <View style={styles.inputContainer}>
-                        <TouchableOpacity style={styles.locationIcon} onPress={() => getCurrentPosition("departure")}>
-                            <Ionicons name="locate-outline" size={28} color="white" 
+                            <Ionicons name="close-circle" size={17} color="lightgrey" onPress={() => cleanAdressInput("departure")}
                             style={{
-                                shadowOffset:{  width: 2,  height: 2,  },
-                                shadowColor: 'black',
-                                shadowOpacity: 0.5,
-                                shadowRadius: 0.6}}/>
-                        </TouchableOpacity>
+                                position: 'absolute',
+                                right: 4,
+                                bottom: 15
+                            }}/>
+                        </View>
+                        }
+                        {(departureIsCurrent == false && departureIsFavorite == false) &&
                         <GooglePlacesAutocomplete
                             placeholder='Départ'
                             fetchDetails={true}
@@ -233,6 +279,7 @@ const Search = ({ navigation }) => {
                                     longitudeDelta: 0.04
                                 })
                             }}
+
                             GooglePlacesSearchQuery={{
                                 rankby: "distance"
                             }}
@@ -269,86 +316,176 @@ const Search = ({ navigation }) => {
                             }}
                             nearbyPlacesAPI='GooglePlacesSearch'
                         />
+                    }
                     </View>
-                }
-                {arrivalIsCurrent == true &&
-                    <View style={[styles.inputContainer, { marginHorizontal: 20 }]}>
-                        <TouchableOpacity style={styles.locationIcon} onPress={() => removeCurrentPosition("arrival")}>
-                            <Ionicons name="locate-outline" size={28} color="black" />
-                        </TouchableOpacity>
-                        <View style={styles.currentLocationText}>
-                            <Text> {arrival.name} </Text>
+
+                <View style={[styles.inputContainer, {marginHorizontal: (arrivalIsCurrent || arrivalIsFavorite) ? 20 : 0 }]}>
+                    <TouchableOpacity style={styles.locationIcon} onPress={() => getCurrentPosition("arrival")}>
+                        <Ionicons name="locate-outline" size={28} color={arrivalIsCurrent == true ? "lightblue" : "white"}/>
+                    </TouchableOpacity>
+                    {(arrivalIsCurrent == true || arrivalIsFavorite == true) &&
+                    <View style={styles.currentLocationText}>
+                        <Text> {arrival.name} </Text>
+                        <Ionicons name="close-circle" size={17} color="lightgrey" onPress={() => cleanAdressInput("arrival")}
+                        style={{
+                            position: 'absolute',
+                            right: 4,
+                            bottom: 15
+                        }}/>
+                    </View>
+                    }
+                    {(arrivalIsCurrent == false && arrivalIsFavorite == false) &&
+                    <GooglePlacesAutocomplete
+                        placeholder='Destination'
+                        fetchDetails={true}
+                        onPress={(data, details = null) => {
+                            setArrival({
+                                name: details.address_components[0].short_name + " " + details.address_components[1].short_name,
+                                latitude: details.geometry.location.lat,
+                                longitude: details.geometry.location.lng,
+                                latitudeDelta: 0.09,
+                                longitudeDelta: 0.04
+                            })
+                        }}
+                        
+                        GooglePlacesSearchQuery={{
+                            rankby: "distance"
+                        }}
+
+                        query={{
+                            key: 'AIzaSyC7nSp83OyKXsEQ991GVi99QpmrHORt-CY',
+                            language: 'fr',
+                            components: 'country:fr',
+                            location: '48.8534, 2.3488',
+                            radius: '60000',
+                            strictbounds: true,
+
+                        }}
+                        styles={{
+                            container: {
+                                flex: 0,
+                                width: '80%',
+                                alignSelf: 'center',
+                            },
+                            textInput: {
+                                borderRadius: 30,
+                                paddingTop: 10,
+                                paddingBottom: 10,
+                                paddingLeft: 20,
+                                paddingRight: 0,
+                                width: 370,
+                                height: 50,
+                            },
+                            listView: {
+                                borderRadius: 20
+                            }
+                        }}
+                    />
+                    }
+                </View>
+                <View style={[{marginTop: 8, marginBottom: 20, marginLeft: 20, display: 'flex', flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around'}]}>
+                    <View style={[{ display: 'flex', flexDirection: 'column', paddingTop: 10}]}>
+                        <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
+                            <Text style={{color: 'white', marginRight: 10}}>
+                                Départ à 
+                            </Text>
+                            {departureIsNow &&
+                            <TouchableOpacity onPress={() => setDepartureIsNow(false)}>
+                                <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
+                                    <Ionicons name='caret-down-outline' color={'white'} size={15}></Ionicons>
+                                    <Text style={{color: 'white', marginLeft: 2, fontWeight: 'bold'}}>
+                                        maintenant
+                                    </Text>
+                                </View>
+                            </TouchableOpacity>
+                            }
+                            {!departureIsNow &&
+                            <TouchableOpacity onPress={() => setDepartureIsNow(true)}>
+                                <Ionicons name='caret-up-outline' color={'white'} size={15}></Ionicons>
+                            </TouchableOpacity>
+                            }
+                        </View>
+                        <View style={[{display: 'flex', flexDirection: 'row', alignItems: 'center', marginTop: 10}]}>
+                                <DatePicker
+                                    disabled={departureIsNow}
+                                    style={{width: 50}}
+                                    date={time}
+                                    mode="time"
+                                    placeholder="sélectionner une heure"
+                                    format="HH:mm"
+                                    confirmBtnText="OK"
+                                    cancelBtnText="annuler"
+                                    customStyles={{
+                                        dateText: {
+                                            color: '#FC7F90',
+                                        },
+                                        disabled: {
+                                            backgroundColor: '#FC7F90',
+                                            
+                                        },
+                                        dateIcon: {
+                                            display: 'none'
+                                        },
+                                        dateInput: {
+                                            borderWidth: 0,
+                                            backgroundColor: 'white'
+                                        },
+                                        datePicker: {
+                                            marginHorizontal: 170,
+                                        },
+                                        btnTextConfirm: {
+                                            color: '#FE596F'
+                                        }
+                                    // ... You can check the source to find the other keys.
+                                    }}
+                                    onDateChange={(time) => {setTime(time)}}
+                                />  
+                                <DatePicker
+                                    date={date}
+                                    disabled={departureIsNow}
+                                    minDate={new Date()}
+                                    style={{width: 90, marginLeft: 10, backgroundColor: 'black'}}
+                                    mode="date"
+                                    placeholder="sélectionner une date"
+                                    format="DD-MM-YYYY"
+                                    confirmBtnText="OK"
+                                    cancelBtnText="annuler"
+                                    showIcon={false}
+                                    customStyles={{
+                                        dateText: {
+                                            color: '#FC7F90',
+                                        },
+                                        disabled: {
+                                            backgroundColor: '#FC7F90',
+                                            
+                                        },
+                                        dateInput: {
+                                            borderWidth: 0,
+                                            backgroundColor: 'white'
+                                        },
+                                        datePicker: {
+                                            marginHorizontal: 150,
+                                        },
+                                        btnTextConfirm: {
+                                            color: '#FE596F'
+                                        }
+                                    // ... You can check the source to find the other keys.
+                                    }}
+                                    onDateChange={(date) => {setDate(date)}}
+                                /> 
                         </View>
                     </View>
-                }
-                {arrivalIsCurrent == false &&
-                    <View style={styles.inputContainer}>
-                        <TouchableOpacity style={styles.locationIcon} onPress={() => getCurrentPosition("arrival")}>
-                            <Ionicons name="locate-outline" size={28} color="white" 
+                    <View style={{}}>
+                        <TouchableOpacity onPress={() => showResults()}>
+                            <Ionicons name={"navigate-circle-outline"} size={55} color={"white"} 
                             style={{
                                 shadowOffset:{  width: 2,  height: 2,  },
                                 shadowColor: 'black',
-                                shadowOpacity: 0.5,
-                                shadowRadius: 0.6}}/>
+                                shadowOpacity: 0.2,
+                                shadowRadius: 1}}/>
                         </TouchableOpacity>
-                        <GooglePlacesAutocomplete
-                            placeholder='Destination'
-                            fetchDetails={true}
-                            onPress={(data, details = null) => {
-                                setArrival({
-                                    name: details.address_components[0].short_name + " " + details.address_components[1].short_name,
-                                    latitude: details.geometry.location.lat,
-                                    longitude: details.geometry.location.lng,
-                                    latitudeDelta: 0.09,
-                                    longitudeDelta: 0.04
-                                })
-                            }}
-                            GooglePlacesSearchQuery={{
-                                rankby: "distance"
-                            }}
-
-                            query={{
-                                key: 'AIzaSyC7nSp83OyKXsEQ991GVi99QpmrHORt-CY',
-                                language: 'fr',
-                                components: 'country:fr',
-                                location: '48.8534, 2.3488',
-                                radius: '60000',
-                                strictbounds: true,
-
-                            }}
-                            styles={{
-                                container: {
-                                    flex: 0,
-                                    width: '80%',
-                                    alignSelf: 'center',
-                                },
-                                textInput: {
-                                    borderRadius: 30,
-                                    paddingTop: 10,
-                                    paddingBottom: 10,
-                                    paddingLeft: 20,
-                                    paddingRight: 0,
-                                    width: 370,
-                                    height: 50,
-                                },
-                                listView: {
-                                    borderRadius: 20
-                                }
-                            }}
-                        />
                     </View>
-                }
-                <View style={{alignItems: 'center', marginTop: 15}}>
-                    <TouchableOpacity onPress={() => showResults()}>
-                        <Ionicons name={"navigate-circle-outline"} size={55} color={"white"} 
-                        style={{
-                            shadowOffset:{  width: 2,  height: 2,  },
-                            shadowColor: 'black',
-                            shadowOpacity: 0.2,
-                            shadowRadius: 1}}/>
-                    </TouchableOpacity>
                 </View>
-
             </View>
             {isShowingResults === false &&
                 <MapView
@@ -423,7 +560,7 @@ const Search = ({ navigation }) => {
 
                                 <View style={styles.duration}>
                                     <Text style={styles.duration_number}>
-                                        {Math.round(item.duration) >= 60 ? time_convert(Math.round(item.duration)) : Math.round(item.duration)}
+                                        {Math.round(item.duration) >= 60 ? convertMinutesInHours(Math.round(item.duration)) : Math.round(item.duration)}
                                     </Text>
                                     <Text style={styles.duration_text}>
                                         min
@@ -448,8 +585,7 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
     },
     inputsBoxContainer: {
-        paddingHorizontal: 10,
-        paddingVertical: 23,
+        paddingVertical: 10,
         paddingTop: 70,
         backgroundColor: "#FE596F",
         borderRadius: 10
