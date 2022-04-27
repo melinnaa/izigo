@@ -67,6 +67,7 @@ const Main = ({navigation}) => {
         }
     };
 
+
     return (
         <ScrollView contentContainerStyle={styles.container}>
             <View style={styles.inputContainer}>
@@ -93,7 +94,7 @@ const Main = ({navigation}) => {
                     </View>
                     {tweets.map((tweet) => {
                         return(
-                            <View style={styles.tweetContainer}>  
+                            <View style={styles.tweetContainer} key={tweet.id}>  
                                 <Image
                                     style={{width: 30, height:30, borderRadius:50}}              
                                     source={{ uri: imageAccount }}

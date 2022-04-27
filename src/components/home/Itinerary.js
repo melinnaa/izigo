@@ -8,6 +8,7 @@ import MapViewDirections from 'react-native-maps-directions';
 import { useEffect } from 'react';
 import firebase from './../../Firebase/firebase';
 import '@firebase/firestore'
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
 const Itinerary = ({ navigation, route }) => {
 	const [itinerary, setItinerary] = useState();
@@ -21,7 +22,8 @@ const Itinerary = ({ navigation, route }) => {
 	useEffect(() => {
 		if (!itinerary) {
 			const iti = route.params.itinerary
-			const sections = JSON.parse(iti.sections)
+			const sections = JSON.parse(iti.sections);
+			
 			setItinerary({
 				id: iti.id,
 				departure: iti.departure,
@@ -39,6 +41,67 @@ const Itinerary = ({ navigation, route }) => {
 			fetchCoordinates();
 		}
 	}, []);
+
+	const showResults = () => {
+		const data = fetchData();
+		Promise.resolve(data).then((response) => {
+			const itineraries = new Array;
+			const journeys = response.data.journeys
+			for (var i = 0; i < journeys.length; i++) {
+				itineraries.push(formatItinerary(journeys[i]));
+			}
+			setItineraries(itineraries);
+			setIsShowingResults(true);
+		})
+    }
+
+    const fetchData = async () => {
+        try {
+            const resp = await axios.get("https://api.navitia.io/v1/coverage/fr-idf/journeys?from=" + itinerary.departure.longitude + "%3B" + itinerary.departure.latitude + "&to=" + itinerary.arrival.longitude + "%3B" + itinerary.arrival.latitude + "&", {
+                headers: {
+                    'Authorization': `7a9c06ed-e0b6-4bc3-a7da-f27d4cbee972`,
+                }
+            })
+            return resp
+
+        } catch (err) {
+            console.log(err.response);
+            Alert.alert(
+                "Pas d'itinéraire",
+                "Aucun itinéraire n'a été trouvé",
+                [
+                    {
+                        text: "OK"
+                    }
+                ]
+            );
+        }
+    }
+
+    const formatItinerary = (itinerary) => {
+
+        return {
+            id: guidGenerator(),
+            departure: departure,
+            arrival: arrival,
+            duration: Math.round(itinerary.duration / 60), //in minutes
+            sections: itinerary.sections,
+            timeOfDeparture: convertDateTimeInTime(itinerary.departure_date_time), //format: HH:MM
+            timeOfArrival: convertDateTimeInTime(itinerary.arrival_date_time), //format: HH:MM
+        }
+    }
+
+    //convert YYYYMMDDTHHMMSS to HH:MM
+    const convertDateTimeInTime = (dateTime) => {
+        return dateTime.substr(-6).substr(0, 2) + ":" + dateTime.substr(-6).substr(2, 2);
+    }
+
+	const guidGenerator = () => {
+        var S4 = function () {
+            return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+        };
+        return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
+    }
 
 	const fetchCoordinates = () => {
 		const allPaths = new Array();
@@ -109,25 +172,41 @@ const Itinerary = ({ navigation, route }) => {
 
 	// save the new fav itinerary in the database
 	const addFavorite = () => {
-		db.collection("Courses")
+		db.collection("Favorites")
 			.doc(itinerary.id)
 			.set({
 				departure: itinerary.departure,
 				arrival: itinerary.arrival,
-				timeOfCourse: itinerary.duration,
-				timeOfDeparture: itinerary.timeOfDeparture,
-				timeOfArrival: itinerary.timeOfArrival,
-				sections: JSON.stringify(itinerary.sections),
 				idUser: user.uid
 			})
 			.then((docRef) => {
-				console.log("course added in the db !")
+				console.log("new favorite added in the db !")
 				setIsFavorite(true);
 			})
 			.catch((error) => {
 				console.log("Error adding document: ", error)
 			})
 	}
+	// const addFavorite = () => {
+	// 	db.collection("Courses")
+	// 		.doc(itinerary.id)
+	// 		.set({
+	// 			departure: itinerary.departure,
+	// 			arrival: itinerary.arrival,
+	// 			timeOfCourse: itinerary.duration,
+	// 			timeOfDeparture: itinerary.timeOfDeparture,
+	// 			timeOfArrival: itinerary.timeOfArrival,
+	// 			sections: JSON.stringify(itinerary.sections),
+	// 			idUser: user.uid
+	// 		})
+	// 		.then((docRef) => {
+	// 			console.log("course added in the db !")
+	// 			setIsFavorite(true);
+	// 		})
+	// 		.catch((error) => {
+	// 			console.log("Error adding document: ", error)
+	// 		})
+	// }
 
 	const deleteFavorite = () => {
 		console.log("delete")
@@ -147,7 +226,7 @@ const Itinerary = ({ navigation, route }) => {
 		navigation.dispatch(StackActions.pop(1))
 	}
 
-	const time_convert = (num) => { 
+	const convertMinutesInHours = (num) => { 
         var hours = Math.floor(num / 60);  
         var minutes = num % 60;
         return hours + "h" + minutes;         
@@ -253,7 +332,7 @@ const Itinerary = ({ navigation, route }) => {
 											<View style={[styles.step]}>
 												<Ionicons name={"walk"} size={25} />
 												<Text>
-													{/* afficher le petit bonhomme + durée en secondes */}
+													{/* afficher le petit bonhomme + durée en minutes */}
 													{Math.round(section.duration / 60)} mn
 												</Text>
 												<View style={styles.step_separator}>
@@ -268,7 +347,7 @@ const Itinerary = ({ navigation, route }) => {
 						</View>
 						<View style={styles.duration}>
 							<Text style={styles.duration_number}>
-								{Math.round(itinerary.duration) >= 60 ? time_convert(Math.round(itinerary.duration)) : Math.round(itinerary.duration)}
+								{Math.round(itinerary.duration) >= 60 ? convertMinutesInHours(Math.round(itinerary.duration)) : Math.round(itinerary.duration)}
 							</Text>
 							<Text style={styles.duration_text}>
 								min
@@ -291,8 +370,11 @@ const Itinerary = ({ navigation, route }) => {
 								</View>
 							</View>
 							<View style={styles.locationLine}>
-								<Text style={{ marginBottom: 10, fontWeight: '500'}}>
+								<Text style={{ fontWeight: '500'}}>
 									{itinerary.departure.name}
+								</Text>
+								<Text style={{ marginBottom: 10, fontWeight: '500'}}>
+									Départ à {itinerary.timeOfDeparture}
 								</Text>
 							</View>
 						</View>
@@ -307,6 +389,7 @@ const Itinerary = ({ navigation, route }) => {
 										<View style={styles.pathDetails}>
 
 											<Text style={styles.stopPoint}> {section.from.stop_point.name} </Text>
+											<Text style={styles.stopPoint}> {convertDateTimeInTime(section.departure_date_time)}</Text>
 
 											<View style={styles.direction}>
 												<View>                     
@@ -326,6 +409,7 @@ const Itinerary = ({ navigation, route }) => {
 												<Text style={styles.directionText}>{section.display_informations.direction} </Text>
 											</View>
 											<Text style={styles.stopPoint}> {section.to.stop_point.name} </Text>
+											<Text style={styles.stopPoint}> {convertDateTimeInTime(section.arrival_date_time)}</Text>
 										</View>
 									</View>
 									<View style={styles.statsContainer}>
@@ -424,6 +508,9 @@ const Itinerary = ({ navigation, route }) => {
 							<View style={styles.locationLine}>
 								<Text style={{marginLeft: 10, marginTop: 10, fontWeight: '500'}}>
 									{itinerary.arrival.name}
+								</Text>
+								<Text style={{marginLeft: 10, fontWeight: '500'}}>
+									Arrivée à {itinerary.timeOfArrival}
 								</Text>
 							</View>
 						</View>

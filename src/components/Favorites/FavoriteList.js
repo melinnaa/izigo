@@ -17,7 +17,7 @@ const FavoriteList = ({ navigation }) => {
     const db = firebase.firestore();
         useEffect(() => {
             const dataFavoris = []
-            db.collection('Courses')
+            db.collection('Favorites')
                 .where("idUser", "==", userUID)
                 .get()
                 .then(snapshot => {
@@ -56,7 +56,7 @@ const FavoriteList = ({ navigation }) => {
             >
                 <View style={styles.signOutButton}>
                     <Ionicons name="log-out-outline" size={35} color={"black"}/>
-                    <Text style={styles.submitText} >Se déconnecter</Text>
+                    <Text style={styles.submitText}>Se déconnecter</Text>
                 </View>
             </TouchableOpacity>
             <View style={styles.favorisContainer}>
@@ -73,7 +73,7 @@ const FavoriteList = ({ navigation }) => {
                             <Text style={styles.item}>{item.departure.name} - {item.arrival.name}</Text>
                         </View>
                         <View style={styles.chevronContainer}>
-                            <TouchableOpacity onPress={() => navigation.navigate("FavoriteDetails", { props: item })}>
+                            <TouchableOpacity onPress={() => navigation.navigate("Search", { favorite: item })}>
                                 <Ionicons name="chevron-forward-outline" size={35} color="#000000" />
                             </TouchableOpacity>
                         </View>
